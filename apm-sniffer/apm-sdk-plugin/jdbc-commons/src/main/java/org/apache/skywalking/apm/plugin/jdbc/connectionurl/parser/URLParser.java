@@ -40,7 +40,7 @@ public class URLParser {
         if (lowerCaseUrl.startsWith(MYSQL_JDBC_URL_PREFIX)) {
             parser = new MysqlURLParser(url);
         } else if (lowerCaseUrl.startsWith(ORACLE_JDBC_URL_PREFIX)) {
-            parser = new OracleURLParser(url);
+            parser = new OracleURLParser(url.toUpperCase());
         } else if (lowerCaseUrl.startsWith(H2_JDBC_URL_PREFIX)) {
             parser = new H2URLParser(url);
         } else if (lowerCaseUrl.startsWith(POSTGRESQL_JDBC_URL_PREFIX)) {

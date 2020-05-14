@@ -29,6 +29,7 @@ import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.EnhancedI
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.InstanceMethodsAroundInterceptor;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.MethodInterceptResult;
 import org.apache.skywalking.apm.network.trace.component.ComponentsDefine;
+import org.slf4j.MDC;
 
 import javax.jms.Message;
 import java.lang.reflect.Method;
@@ -50,16 +51,38 @@ public class ActiveMQProducerInterceptor implements InstanceMethodsAroundInterce
         ActiveMQDestination activeMQDestination = (ActiveMQDestination) allArguments[0];
         Message message = (Message)  allArguments[1];
         String url = (String) objInst.getSkyWalkingDynamicField();
+
+        boolean useUpayTransId = false;
+
+        String transId = MDC.get("PAY-TRANS");
+        if (transId == null) {
+            transId = MDC.get("CONTRACTCODE-KEY");
+            if (transId == null) {
+                transId = MDC.get("REFUND-ORDER-NO-INX");
+                if (transId == null) {
+                    transId = MDC.get("UPAY-TRANS-ID");
+                    useUpayTransId = true;
+                }
+            }
+        }
+
+        if (transId == null) {
+            transId = "";
+        } else if (useUpayTransId) {
+            transId = transId.replace("|", "");
+        }
         AbstractSpan activeSpan = null;
         if (activeMQDestination.getDestinationType() == QUEUE_TYPE || activeMQDestination.getDestinationType() == TEMP_QUEUE_TYPE) {
             activeSpan = ContextManager.createExitSpan(OPERATE_NAME_PREFIX + "Queue/" + activeMQDestination.getPhysicalName() + PRODUCER_OPERATE_NAME_SUFFIX, contextCarrier, url);
-            Tags.MQ_BROKER.set(activeSpan,url);
+            Tags.MQ_BROKER.set(activeSpan, url);
             Tags.MQ_QUEUE.set(activeSpan,activeMQDestination.getPhysicalName());
+            ActiveMQExtendTag.TRANS_ID.set(activeSpan, transId);
 
         } else if (activeMQDestination.getDestinationType() == TOPIC_TYPE || activeMQDestination.getDestinationType() == TEMP_TOPIC_TYPE) {
             activeSpan = ContextManager.createExitSpan(OPERATE_NAME_PREFIX + "Topic/" + activeMQDestination.getPhysicalName() + PRODUCER_OPERATE_NAME_SUFFIX, contextCarrier, url);
             Tags.MQ_BROKER.set(activeSpan, url);
             Tags.MQ_TOPIC.set(activeSpan,activeMQDestination.getPhysicalName());
+            ActiveMQExtendTag.TRANS_ID.set(activeSpan, transId);
         }
         SpanLayer.asMQ(activeSpan);
         activeSpan.setComponent(ComponentsDefine.ACTIVEMQ_PRODUCER);

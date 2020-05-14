@@ -15,4 +15,5 @@
 # limitations under the License.
 
 activemq-5.x=org.apache.skywalking.apm.plugin.activemq.define.ActiveMQProducerInstrumentation
-activemq-5.x=org.apache.skywalking.apm.plugin.activemq.define.ActiveMQConsumerInstrumentation
+activemq-5.x=org.apache.skywalking.apm.plugin.activemq.define.ActiveMQConsumerInterfaceInstrumentation
+activemq-5.x=org.apache.skywalking.apm.plugin.activemq.define.ActiveMQConsumerAnnotationInstrumentation
