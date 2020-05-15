@@ -18,8 +18,8 @@
 
 package org.apache.skywalking.apm.plugin.activemq;
 
-import java.lang.reflect.Method;
-import org.apache.activemq.command.MessageDispatch;
+import org.apache.activemq.command.ActiveMQDestination;
+import org.apache.activemq.command.ActiveMQMessage;
 import org.apache.skywalking.apm.agent.core.context.CarrierItem;
 import org.apache.skywalking.apm.agent.core.context.ContextCarrier;
 import org.apache.skywalking.apm.agent.core.context.ContextManager;
@@ -30,6 +30,8 @@ import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.EnhancedI
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.InstanceMethodsAroundInterceptor;
 import org.apache.skywalking.apm.agent.core.plugin.interceptor.enhance.MethodInterceptResult;
 import org.apache.skywalking.apm.network.trace.component.ComponentsDefine;
+
+import java.lang.reflect.Method;
 
 /**
  * @author withlin
@@ -47,29 +49,38 @@ public class ActiveMQConsumerInterceptor implements InstanceMethodsAroundInterce
     public void beforeMethod(EnhancedInstance objInst, Method method, Object[] allArguments, Class<?>[] argumentsTypes,
         MethodInterceptResult result) throws Throwable {
         ContextCarrier contextCarrier = new ContextCarrier();
-        String url = (String)objInst.getSkyWalkingDynamicField();
-        MessageDispatch messageDispatch = (MessageDispatch)allArguments[0];
+        ActiveMQMessage messageDispatch = (ActiveMQMessage)allArguments[1];
+        ActiveMQDestination jmsDestination = messageDispatch.getDestination();
+        String url ="";
+
+        if(jmsDestination.getPhysicalName().contains("-core-core-default")){
+            contextCarrier=null;
+        }
+        if(contextCarrier!=null) {
+            CarrierItem next = contextCarrier.items();
+            while (next.hasNext()) {
+                next = next.next();
+                String propertyValue = messageDispatch.getStringProperty(next.getHeadKey());
+                if (propertyValue != null) {
+                    next.setHeadValue(propertyValue);
+                }
+            }
+        }
+
+
         AbstractSpan activeSpan = null;
-        if (messageDispatch.getDestination().getDestinationType() == QUEUE_TYPE || messageDispatch.getDestination().getDestinationType() == TEMP_QUEUE_TYPE) {
-            activeSpan = ContextManager.createEntrySpan(OPERATE_NAME_PREFIX + "Queue/" + messageDispatch.getDestination().getPhysicalName() + CONSUMER_OPERATE_NAME_SUFFIX, null).start(System.currentTimeMillis());
+        if (jmsDestination.getDestinationType() == QUEUE_TYPE || jmsDestination.getDestinationType() == TEMP_QUEUE_TYPE) {
+            activeSpan = ContextManager.createEntrySpan(OPERATE_NAME_PREFIX + "Queue/" + jmsDestination.getPhysicalName() + CONSUMER_OPERATE_NAME_SUFFIX, contextCarrier);
             Tags.MQ_BROKER.set(activeSpan, url);
-            Tags.MQ_QUEUE.set(activeSpan, messageDispatch.getDestination().getPhysicalName());
-        } else if (messageDispatch.getDestination().getDestinationType() == TOPIC_TYPE || messageDispatch.getDestination().getDestinationType() == TEMP_TOPIC_TYPE) {
-            activeSpan = ContextManager.createEntrySpan(OPERATE_NAME_PREFIX + "Topic/" + messageDispatch.getDestination().getPhysicalName() + CONSUMER_OPERATE_NAME_SUFFIX, null).start(System.currentTimeMillis());
+            Tags.MQ_QUEUE.set(activeSpan, jmsDestination.getPhysicalName());
+        } else if (jmsDestination.getDestinationType() == TOPIC_TYPE || jmsDestination.getDestinationType() == TEMP_TOPIC_TYPE) {
+            activeSpan = ContextManager.createEntrySpan(OPERATE_NAME_PREFIX + "Topic/" + jmsDestination.getPhysicalName() + CONSUMER_OPERATE_NAME_SUFFIX, contextCarrier);
             Tags.MQ_BROKER.set(activeSpan, url);
-            Tags.MQ_TOPIC.set(activeSpan, messageDispatch.getDestination().getPhysicalName());
+            Tags.MQ_TOPIC.set(activeSpan, jmsDestination.getPhysicalName());
         }
         activeSpan.setComponent(ComponentsDefine.ACTIVEMQ_CONSUMER);
         SpanLayer.asMQ(activeSpan);
-        CarrierItem next = contextCarrier.items();
-        while (next.hasNext()) {
-            next = next.next();
-            Object propertyValue = messageDispatch.getMessage().getProperty(next.getHeadKey());
-            if (propertyValue != null) {
-                next.setHeadValue(propertyValue.toString());
-            }
-        }
-        ContextManager.extract(contextCarrier);
+
 
     }
 
