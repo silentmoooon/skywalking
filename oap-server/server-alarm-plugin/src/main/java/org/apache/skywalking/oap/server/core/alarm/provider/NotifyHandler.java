@@ -18,19 +18,31 @@
 
 package org.apache.skywalking.oap.server.core.alarm.provider;
 
-import java.util.*;
 import org.apache.skywalking.oap.server.core.CoreModule;
 import org.apache.skywalking.oap.server.core.alarm.*;
-import org.apache.skywalking.oap.server.core.analysis.metrics.*;
-import org.apache.skywalking.oap.server.core.cache.*;
-import org.apache.skywalking.oap.server.core.register.*;
+import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
+import org.apache.skywalking.oap.server.core.analysis.metrics.MetricsMetaInfo;
+import org.apache.skywalking.oap.server.core.analysis.metrics.WithMetadata;
+import org.apache.skywalking.oap.server.core.cache.DatabaseAccessInventoryCache;
+import org.apache.skywalking.oap.server.core.cache.EndpointInventoryCache;
+import org.apache.skywalking.oap.server.core.cache.ServiceInstanceInventoryCache;
+import org.apache.skywalking.oap.server.core.cache.ServiceInventoryCache;
+import org.apache.skywalking.oap.server.core.register.DatabaseAccessInventory;
+import org.apache.skywalking.oap.server.core.register.EndpointInventory;
+import org.apache.skywalking.oap.server.core.register.ServiceInstanceInventory;
+import org.apache.skywalking.oap.server.core.register.ServiceInventory;
 import org.apache.skywalking.oap.server.core.source.DefaultScopeDefine;
 import org.apache.skywalking.oap.server.library.module.ModuleManager;
+
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 public class NotifyHandler implements MetricsNotify {
     private ServiceInventoryCache serviceInventoryCache;
     private ServiceInstanceInventoryCache serviceInstanceInventoryCache;
     private EndpointInventoryCache endpointInventoryCache;
+    private DatabaseAccessInventoryCache databaseAccessInventoryCache;
 
     private final AlarmCore core;
     private final AlarmRulesWatcher alarmRulesWatcher;
@@ -82,7 +94,25 @@ public class NotifyHandler implements MetricsNotify {
 
             endpointMetaInAlarm.setName(textName);
             metaInAlarm = endpointMetaInAlarm;
-        } else {
+        }else if(DefaultScopeDefine.inDatabaseAccessCatalog(scope)){
+            int endpointId = Integer.parseInt(meta.getId());
+            DatabaseAccessInventory endpointInventory = databaseAccessInventoryCache.get(endpointId);
+            DatabaseAccessMetaInAlarm endpointMetaInAlarm = new DatabaseAccessMetaInAlarm();
+            endpointMetaInAlarm.setMetricsName(meta.getMetricsName());
+            endpointMetaInAlarm.setId(endpointId);
+
+            String textName = endpointInventory.getName();
+
+            endpointMetaInAlarm.setName(textName);
+            metaInAlarm = endpointMetaInAlarm;
+            System.out.println("data access");
+            System.out.println(metrics.getSurvivalTime());
+            System.out.println(metrics.getTimeBucket());
+            System.out.println(((WithMetadata) metrics).getMeta().getMetricsName());
+            System.out.println(((WithMetadata) metrics).getMeta().getId());
+            System.out.println(((WithMetadata) metrics).getMeta().getScope());
+        }
+        else {
             return;
         }
 
