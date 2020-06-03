@@ -19,11 +19,12 @@
 
 package org.apache.skywalking.apm.plugin.jdbc.connectionurl.parser;
 
-import java.util.ArrayList;
-import java.util.List;
 import org.apache.skywalking.apm.network.trace.component.ComponentsDefine;
 import org.apache.skywalking.apm.plugin.jdbc.trace.ConnectionInfo;
 import org.apache.skywalking.apm.util.StringUtil;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * {@link OracleURLParser} presents that how to parse oracle connection url.
@@ -107,7 +108,7 @@ public class OracleURLParser extends AbstractURLParser {
     }
 
     private String parseDatabaseHostsFromURL() {
-        int beginIndex = url.indexOf("DESCRIPTION");
+        int beginIndex = url.indexOf(TNSNAME_URL_FLAG);
         List<String> hosts = new ArrayList<String>();
         do {
             int hostStartIndex = url.indexOf("HOST", beginIndex);
