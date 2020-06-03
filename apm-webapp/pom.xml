@@ -121,22 +121,22 @@
                     <nodeVersion>v8.9.4</nodeVersion>
                 </configuration>
                 <executions>
-                    <execution>
-                        <id>install node and npm</id>
-                        <goals>
-                            <goal>install-node-and-npm</goal>
-                        </goals>
-                    </execution>
-                    <execution>
-                        <id>npm install</id>
-                        <goals>
-                            <goal>npm</goal>
-                        </goals>
-                        <configuration>
-                            <arguments>install --registry=https://registry.npmjs.org/</arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
+<!--                    <execution>-->
+<!--                        <id>install node and npm</id>-->
+<!--                        <goals>-->
+<!--                            <goal>install-node-and-npm</goal>-->
+<!--                        </goals>-->
+<!--                    </execution>-->
+<!--                    <execution>-->
+<!--                        <id>npm install</id>-->
+<!--                        <goals>-->
+<!--                            <goal>npm</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <arguments>install &#45;&#45;registry=https://registry.npm.taobao.org/</arguments>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+                   <!-- <execution>
                         <id>npm run build</id>
                         <goals>
                             <goal>npm</goal>
@@ -144,7 +144,7 @@
                         <configuration>
                             <arguments>run build</arguments>
                         </configuration>
-                    </execution>
+                    </execution>-->
                 </executions>
             </plugin>
             <plugin>
