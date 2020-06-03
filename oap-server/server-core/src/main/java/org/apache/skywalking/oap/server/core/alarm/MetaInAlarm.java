@@ -30,6 +30,8 @@ public abstract class MetaInAlarm {
 
     public abstract String getMetricsName();
 
+    public abstract   String getSql();
+
     /**
      * In most scopes, there is only id0, as primary id. Such as Service, Endpoint. But in relation, the ID includes
      * two, actually. Such as ServiceRelation, id0 represents the sourceScopeId service id

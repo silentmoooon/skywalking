@@ -18,10 +18,11 @@
 
 package org.apache.skywalking.oap.server.core.query.entity;
 
-import java.util.HashMap;
 import lombok.Getter;
 import org.apache.skywalking.oap.server.core.UnexpectedException;
 import org.apache.skywalking.oap.server.core.source.DefaultScopeDefine;
+
+import java.util.HashMap;
 
 /**
  * @author wusheng
@@ -32,7 +33,8 @@ public enum Scope {
     Endpoint(DefaultScopeDefine.ENDPOINT),
     ServiceRelation(DefaultScopeDefine.SERVICE_RELATION),
     ServiceInstanceRelation(DefaultScopeDefine.SERVICE_INSTANCE_RELATION),
-    EndpointRelation(DefaultScopeDefine.ENDPOINT_RELATION);
+    EndpointRelation(DefaultScopeDefine.ENDPOINT_RELATION),
+    DatabaseAccess(DefaultScopeDefine.DATABASE_ACCESS);
 
     @Getter
     private int scopeId;

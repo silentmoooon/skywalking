@@ -43,6 +43,11 @@ public class AlarmMessageFormatterTest {
                 return null;
             }
 
+            @Override
+            public String getSql() {
+                return null;
+            }
+
             @Override public int getId0() {
                 return 0;
             }
@@ -73,6 +78,11 @@ public class AlarmMessageFormatterTest {
             }
 
             @Override public String getMetricsName() {
+                return null;
+            }
+
+            @Override
+            public String getSql() {
                 return null;
             }
 

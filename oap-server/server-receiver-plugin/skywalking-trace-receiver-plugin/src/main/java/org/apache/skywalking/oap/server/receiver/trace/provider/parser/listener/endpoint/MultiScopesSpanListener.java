@@ -18,9 +18,6 @@
 
 package org.apache.skywalking.oap.server.receiver.trace.provider.parser.listener.endpoint;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
 import org.apache.skywalking.apm.network.common.KeyStringValuePair;
 import org.apache.skywalking.apm.network.language.agent.SpanLayer;
 import org.apache.skywalking.apm.network.language.agent.UniqueId;
@@ -28,15 +25,10 @@ import org.apache.skywalking.apm.util.StringUtil;
 import org.apache.skywalking.oap.server.core.Const;
 import org.apache.skywalking.oap.server.core.CoreModule;
 import org.apache.skywalking.oap.server.core.analysis.TimeBucket;
-import org.apache.skywalking.oap.server.core.cache.EndpointInventoryCache;
-import org.apache.skywalking.oap.server.core.cache.NetworkAddressInventoryCache;
-import org.apache.skywalking.oap.server.core.cache.ServiceInstanceInventoryCache;
-import org.apache.skywalking.oap.server.core.cache.ServiceInventoryCache;
-import org.apache.skywalking.oap.server.core.source.DatabaseSlowStatement;
-import org.apache.skywalking.oap.server.core.source.DetectPoint;
-import org.apache.skywalking.oap.server.core.source.EndpointRelation;
-import org.apache.skywalking.oap.server.core.source.RequestType;
-import org.apache.skywalking.oap.server.core.source.SourceReceiver;
+import org.apache.skywalking.oap.server.core.cache.*;
+import org.apache.skywalking.oap.server.core.register.DatabaseAccessInventory;
+import org.apache.skywalking.oap.server.core.register.worker.InventoryStreamProcessor;
+import org.apache.skywalking.oap.server.core.source.*;
 import org.apache.skywalking.oap.server.library.module.ModuleManager;
 import org.apache.skywalking.oap.server.receiver.trace.provider.DBLatencyThresholdsAndWatcher;
 import org.apache.skywalking.oap.server.receiver.trace.provider.TraceServiceModuleConfig;
@@ -44,13 +36,13 @@ import org.apache.skywalking.oap.server.receiver.trace.provider.parser.SpanTags;
 import org.apache.skywalking.oap.server.receiver.trace.provider.parser.decorator.ReferenceDecorator;
 import org.apache.skywalking.oap.server.receiver.trace.provider.parser.decorator.SegmentCoreInfo;
 import org.apache.skywalking.oap.server.receiver.trace.provider.parser.decorator.SpanDecorator;
-import org.apache.skywalking.oap.server.receiver.trace.provider.parser.listener.EntrySpanListener;
-import org.apache.skywalking.oap.server.receiver.trace.provider.parser.listener.ExitSpanListener;
-import org.apache.skywalking.oap.server.receiver.trace.provider.parser.listener.GlobalTraceIdsListener;
-import org.apache.skywalking.oap.server.receiver.trace.provider.parser.listener.SpanListener;
-import org.apache.skywalking.oap.server.receiver.trace.provider.parser.listener.SpanListenerFactory;
+import org.apache.skywalking.oap.server.receiver.trace.provider.parser.listener.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.LinkedList;
+import java.util.List;
 
 import static java.util.Objects.nonNull;
 
@@ -71,6 +63,7 @@ public class MultiScopesSpanListener implements EntrySpanListener, ExitSpanListe
     private final ServiceInstanceInventoryCache instanceInventoryCache;
     private final ServiceInventoryCache serviceInventoryCache;
     private final EndpointInventoryCache endpointInventoryCache;
+    private final DatabaseAccessInventoryCache databaseAccessInventoryCache;
 
     private final List<SourceBuilder> entrySourceBuilders;
     private final List<SourceBuilder> exitSourceBuilders;
@@ -90,6 +83,8 @@ public class MultiScopesSpanListener implements EntrySpanListener, ExitSpanListe
         this.serviceInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(ServiceInventoryCache.class);
         this.endpointInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(EndpointInventoryCache.class);
         this.networkAddressInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(NetworkAddressInventoryCache.class);
+        this.databaseAccessInventoryCache =
+            moduleManager.find(CoreModule.NAME).provider().getService(DatabaseAccessInventoryCache.class);
         this.config = config;
         this.traceId = null;
     }
@@ -149,6 +144,32 @@ public class MultiScopesSpanListener implements EntrySpanListener, ExitSpanListe
         this.entrySpanDecorator = spanDecorator;
     }
 
+    public int getDatabaseAccessInventoryOrCreate(int serviceId, int endpointId, String name, String sql) {
+        // String sqlBase64= Base64.encodeBase64String(sql.getBytes(StandardCharsets.UTF_8)).substring(0,10);
+        String baseSql;
+        if (sql.length() <= 64) {
+            baseSql = sql;
+        } else {
+            baseSql = sql.substring(0, 63);
+        }
+        int sqlId = databaseAccessInventoryCache.getSqlId(serviceId, endpointId, name, baseSql);
+
+        if (sqlId == Const.NONE) {
+            DatabaseAccessInventory endpointInventory = new DatabaseAccessInventory();
+            endpointInventory.setServiceId(serviceId);
+            endpointInventory.setEndpointId(endpointId);
+            endpointInventory.setName(name);
+            endpointInventory.setSql(sql);
+
+            long now = System.currentTimeMillis();
+            endpointInventory.setRegisterTime(now);
+            endpointInventory.setHeartbeatTime(now);
+
+            InventoryStreamProcessor.getInstance().in(endpointInventory);
+        }
+        return sqlId;
+    }
+
     @Override public void parseExit(SpanDecorator spanDecorator, SegmentCoreInfo segmentCoreInfo) {
         if (this.minuteTimeBucket == 0) {
             this.minuteTimeBucket = segmentCoreInfo.getMinuteTimeBucket();
@@ -194,6 +215,9 @@ public class MultiScopesSpanListener implements EntrySpanListener, ExitSpanListe
             for (KeyStringValuePair tag : spanDecorator.getAllTags()) {
                 if (SpanTags.DB_STATEMENT.equals(tag.getKey())) {
                     String sqlStatement = tag.getValue();
+                    sourceBuilder.setSql(sqlStatement);
+                    sourceBuilder.setSqlId(getDatabaseAccessInventoryOrCreate(sourceBuilder.getSourceServiceId(),
+                        sourceBuilder.getSourceEndpointId(), sourceBuilder.getDestServiceInstanceName(), sqlStatement));
                     if (StringUtil.isEmpty(sqlStatement)) {
                         statement.setStatement("[No statement]/" + sourceBuilder.getDestEndpointName());
                     } else if (sqlStatement.length() > config.getMaxSlowSQLLength()) {
@@ -310,4 +334,5 @@ public class MultiScopesSpanListener implements EntrySpanListener, ExitSpanListe
             return new MultiScopesSpanListener(moduleManager, config);
         }
     }
+
 }

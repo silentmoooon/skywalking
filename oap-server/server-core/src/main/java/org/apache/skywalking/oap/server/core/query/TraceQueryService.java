@@ -18,11 +18,6 @@
 
 package org.apache.skywalking.oap.server.core.query;
 
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.LinkedList;
-import java.util.List;
 import org.apache.skywalking.apm.network.language.agent.SpanObject;
 import org.apache.skywalking.apm.network.language.agent.TraceSegmentObject;
 import org.apache.skywalking.apm.network.language.agent.UniqueId;
@@ -31,20 +26,12 @@ import org.apache.skywalking.apm.network.language.agent.v2.SpanObjectV2;
 import org.apache.skywalking.oap.server.core.Const;
 import org.apache.skywalking.oap.server.core.CoreModule;
 import org.apache.skywalking.oap.server.core.analysis.manual.segment.SegmentRecord;
+import org.apache.skywalking.oap.server.core.cache.DatabaseAccessInventoryCache;
 import org.apache.skywalking.oap.server.core.cache.EndpointInventoryCache;
 import org.apache.skywalking.oap.server.core.cache.NetworkAddressInventoryCache;
 import org.apache.skywalking.oap.server.core.cache.ServiceInventoryCache;
 import org.apache.skywalking.oap.server.core.config.IComponentLibraryCatalogService;
-import org.apache.skywalking.oap.server.core.query.entity.KeyValue;
-import org.apache.skywalking.oap.server.core.query.entity.LogEntity;
-import org.apache.skywalking.oap.server.core.query.entity.Pagination;
-import org.apache.skywalking.oap.server.core.query.entity.QueryOrder;
-import org.apache.skywalking.oap.server.core.query.entity.Ref;
-import org.apache.skywalking.oap.server.core.query.entity.RefType;
-import org.apache.skywalking.oap.server.core.query.entity.Span;
-import org.apache.skywalking.oap.server.core.query.entity.Trace;
-import org.apache.skywalking.oap.server.core.query.entity.TraceBrief;
-import org.apache.skywalking.oap.server.core.query.entity.TraceState;
+import org.apache.skywalking.oap.server.core.query.entity.*;
 import org.apache.skywalking.oap.server.core.register.EndpointInventory;
 import org.apache.skywalking.oap.server.core.register.ServiceInventory;
 import org.apache.skywalking.oap.server.core.storage.StorageModule;
@@ -52,6 +39,12 @@ import org.apache.skywalking.oap.server.core.storage.query.ITraceQueryDAO;
 import org.apache.skywalking.oap.server.library.module.ModuleManager;
 import org.apache.skywalking.oap.server.library.module.Service;
 import org.apache.skywalking.oap.server.library.util.CollectionUtils;
+
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.LinkedList;
+import java.util.List;
 
 import static java.util.Objects.nonNull;
 
@@ -66,6 +59,7 @@ public class TraceQueryService implements Service {
     private EndpointInventoryCache endpointInventoryCache;
     private NetworkAddressInventoryCache networkAddressInventoryCache;
     private IComponentLibraryCatalogService componentLibraryCatalogService;
+    private DatabaseAccessInventoryCache databaseAccessInventoryCache;
 
     public TraceQueryService(ModuleManager moduleManager) {
         this.moduleManager = moduleManager;
@@ -91,7 +85,12 @@ public class TraceQueryService implements Service {
         }
         return endpointInventoryCache;
     }
-
+    private DatabaseAccessInventoryCache getDataAccessInventoryCache() {
+        if (databaseAccessInventoryCache == null) {
+            this.databaseAccessInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(DatabaseAccessInventoryCache.class);
+        }
+        return databaseAccessInventoryCache;
+    }
     private NetworkAddressInventoryCache getNetworkAddressInventoryCache() {
         if (networkAddressInventoryCache == null) {
             this.networkAddressInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(NetworkAddressInventoryCache.class);

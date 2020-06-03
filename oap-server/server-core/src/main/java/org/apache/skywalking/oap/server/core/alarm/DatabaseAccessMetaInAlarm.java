@@ -18,27 +18,26 @@
 
 package org.apache.skywalking.oap.server.core.alarm;
 
+import org.apache.skywalking.oap.server.core.source.DefaultScopeDefine;
+
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.skywalking.oap.server.core.source.DefaultScopeDefine;
 
 @Getter(AccessLevel.PUBLIC)
 @Setter(AccessLevel.PUBLIC)
-public class EndpointMetaInAlarm extends MetaInAlarm {
+public class DatabaseAccessMetaInAlarm extends MetaInAlarm {
     private String metricsName;
-
     private int id;
     private String name;
-    private String[] tags;
-    private String[] properties;
+    private String sql;
 
     @Override public String getScope() {
-        return DefaultScopeDefine.ENDPOINT_CATALOG_NAME;
+        return DefaultScopeDefine.DATABASE_ACCESS_CATALOG_NAME;
     }
 
     @Override public int getScopeId() {
-        return DefaultScopeDefine.ENDPOINT;
+        return DefaultScopeDefine.DATABASE_ACCESS;
     }
 
     @Override public int getId0() {
@@ -48,9 +47,4 @@ public class EndpointMetaInAlarm extends MetaInAlarm {
     @Override public int getId1() {
         return 0;
     }
-    @Override
-    public String getSql() {
-        return "";
-    }
-
 }

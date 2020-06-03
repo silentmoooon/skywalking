@@ -22,6 +22,7 @@ import com.google.common.base.Strings;
 import org.apache.skywalking.oap.server.core.Const;
 import org.apache.skywalking.oap.server.core.CoreModule;
 import org.apache.skywalking.oap.server.core.analysis.Downsampling;
+import org.apache.skywalking.oap.server.core.cache.DatabaseAccessInventoryCache;
 import org.apache.skywalking.oap.server.core.cache.EndpointInventoryCache;
 import org.apache.skywalking.oap.server.core.config.IComponentLibraryCatalogService;
 import org.apache.skywalking.oap.server.core.query.entity.Call;
@@ -56,6 +57,7 @@ public class TopologyQueryService implements Service {
     private IMetadataQueryDAO metadataQueryDAO;
     private EndpointInventoryCache endpointInventoryCache;
     private IComponentLibraryCatalogService componentLibraryCatalogService;
+    private DatabaseAccessInventoryCache databaseAccessInventoryCache;
 
     public TopologyQueryService(ModuleManager moduleManager) {
         this.moduleManager = moduleManager;
@@ -88,7 +90,12 @@ public class TopologyQueryService implements Service {
         }
         return endpointInventoryCache;
     }
-
+    private DatabaseAccessInventoryCache getDataAccessInventoryCache() {
+        if (databaseAccessInventoryCache == null) {
+            this.databaseAccessInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(DatabaseAccessInventoryCache.class);
+        }
+        return databaseAccessInventoryCache;
+    }
     public Topology getGlobalTopology(final Downsampling downsampling, final long startTB, final long endTB) throws IOException {
         logger.debug("Downsampling: {}, startTimeBucket: {}, endTimeBucket: {}", downsampling, startTB, endTB);
         List<Call.CallDetail> serviceRelationServerCalls = getTopologyQueryDAO().loadServerSideServiceRelations(downsampling, startTB, endTB);

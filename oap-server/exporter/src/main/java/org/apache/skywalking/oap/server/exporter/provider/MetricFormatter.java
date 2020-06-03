@@ -31,6 +31,7 @@ public class MetricFormatter {
     private ServiceInventoryCache serviceInventoryCache;
     private ServiceInstanceInventoryCache serviceInstanceInventoryCache;
     private EndpointInventoryCache endpointInventoryCache;
+    private DatabaseAccessInventoryCache databaseAccessInventoryCache;
 
     protected String getEntityName(MetricsMetaInfo meta) {
         int scope = meta.getScope();
@@ -43,6 +44,9 @@ public class MetricFormatter {
         } else if (DefaultScopeDefine.inEndpointCatalog(scope)) {
             int entityId = Integer.valueOf(meta.getId());
             return endpointInventoryCache.get(entityId).getName();
+        }else if (DefaultScopeDefine.inEndpointCatalog(scope)) {
+            int entityId = Integer.valueOf(meta.getId());
+            return databaseAccessInventoryCache.get(entityId).getName();
         } else if (scope == DefaultScopeDefine.ALL) {
             return "";
         } else {

@@ -16,39 +16,22 @@
  *
  */
 
-package org.apache.skywalking.oap.server.core.alarm;
+package org.apache.skywalking.oap.server.core.storage.cache;
 
-import lombok.*;
-import org.apache.skywalking.oap.server.core.source.DefaultScopeDefine;
+import org.apache.skywalking.oap.server.core.register.DatabaseAccessInventory;
+import org.apache.skywalking.oap.server.core.storage.DAO;
 
-@Getter(AccessLevel.PUBLIC)
-@Setter(AccessLevel.PUBLIC)
-public class ServiceInstanceMetaInAlarm extends MetaInAlarm {
-    private String metricsName;
+import java.util.List;
 
-    private int id;
-    private String name;
-    private String[] tags;
-    private String[] properties;
+/**
+ * @author peng-yongsheng
+ */
+public interface IDatabaseAccessInventoryCacheDAO extends DAO {
 
-    @Override public String getScope() {
-        return DefaultScopeDefine.SERVICE_INSTANCE_CATALOG_NAME;
-    }
+    int getSqlId(int serviceId,int endpointId,String name,String sql);
 
-    @Override public int getScopeId() {
-        return DefaultScopeDefine.SERVICE_INSTANCE;
-    }
 
-    @Override public int getId0() {
-        return id;
-    }
+    DatabaseAccessInventory get(int serviceId);
 
-    @Override public int getId1() {
-        return 0;
-    }
-    @Override
-    public String getSql() {
-        return "";
-    }
-
+    List<DatabaseAccessInventory> loadLastUpdate(long lastUpdateTime);
 }

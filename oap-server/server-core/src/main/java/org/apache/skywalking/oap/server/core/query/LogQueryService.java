@@ -18,14 +18,21 @@
 
 package org.apache.skywalking.oap.server.core.query;
 
-import java.io.IOException;
-import org.apache.skywalking.oap.server.core.*;
-import org.apache.skywalking.oap.server.core.cache.*;
-import org.apache.skywalking.oap.server.core.query.entity.*;
+import org.apache.skywalking.oap.server.core.Const;
+import org.apache.skywalking.oap.server.core.CoreModule;
+import org.apache.skywalking.oap.server.core.cache.DatabaseAccessInventoryCache;
+import org.apache.skywalking.oap.server.core.cache.EndpointInventoryCache;
+import org.apache.skywalking.oap.server.core.cache.ServiceInstanceInventoryCache;
+import org.apache.skywalking.oap.server.core.cache.ServiceInventoryCache;
+import org.apache.skywalking.oap.server.core.query.entity.LogState;
+import org.apache.skywalking.oap.server.core.query.entity.Logs;
+import org.apache.skywalking.oap.server.core.query.entity.Pagination;
 import org.apache.skywalking.oap.server.core.storage.StorageModule;
 import org.apache.skywalking.oap.server.core.storage.query.ILogQueryDAO;
+import org.apache.skywalking.oap.server.library.module.ModuleManager;
 import org.apache.skywalking.oap.server.library.module.Service;
-import org.apache.skywalking.oap.server.library.module.*;
+
+import java.io.IOException;
 
 /**
  * @author wusheng
@@ -37,6 +44,7 @@ public class LogQueryService implements Service {
     private ServiceInventoryCache serviceInventoryCache;
     private ServiceInstanceInventoryCache serviceInstanceInventoryCache;
     private EndpointInventoryCache endpointInventoryCache;
+    private DatabaseAccessInventoryCache databaseAccessInventoryCache;
 
     public LogQueryService(ModuleManager moduleManager) {
         this.moduleManager = moduleManager;
@@ -68,6 +76,12 @@ public class LogQueryService implements Service {
             this.endpointInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(EndpointInventoryCache.class);
         }
         return endpointInventoryCache;
+    }
+    private DatabaseAccessInventoryCache getDataAccessInventoryCache() {
+        if (databaseAccessInventoryCache == null) {
+            this.databaseAccessInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(DatabaseAccessInventoryCache.class);
+        }
+        return databaseAccessInventoryCache;
     }
 
     public Logs queryLogs(final String metricName, int serviceId, int serviceInstanceId, int endpointId,

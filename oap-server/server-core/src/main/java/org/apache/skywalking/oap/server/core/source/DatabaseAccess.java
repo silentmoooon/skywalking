@@ -21,11 +21,12 @@ package org.apache.skywalking.oap.server.core.source;
 import lombok.*;
 
 import static org.apache.skywalking.oap.server.core.source.DefaultScopeDefine.DATABASE_ACCESS;
+import static org.apache.skywalking.oap.server.core.source.DefaultScopeDefine.DATABASE_ACCESS_CATALOG_NAME;
 
 /**
  * @author: liuhaoyang
  */
-@ScopeDeclaration(id = DATABASE_ACCESS, name = "DatabaseAccess")
+@ScopeDeclaration(id = DATABASE_ACCESS, name = "DatabaseAccess" ,catalog = DATABASE_ACCESS_CATALOG_NAME)
 @ScopeDefaultColumn.VirtualColumnDefinition(fieldName = "entityId", columnName = "entity_id", isID = true, type = String.class)
 public class DatabaseAccess extends Source {
 
@@ -41,7 +42,10 @@ public class DatabaseAccess extends Source {
 
     @Getter @Setter private long id;
     @Getter @Setter private String name;
+    @Getter @Setter @ScopeDefaultColumn.DefinedByField(columnName = "service_id") private int serviceId;
+    @Getter @Setter private String serviceName;
     @Getter @Setter private int databaseTypeId;
     @Getter @Setter private int latency;
     @Getter @Setter private boolean status;
+    @Getter @Setter private String sql;
 }

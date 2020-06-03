@@ -39,6 +39,11 @@ public class ServiceMetaInAlarm extends MetaInAlarm {
         return DefaultScopeDefine.SERVICE;
     }
 
+    @Override
+    public String getSql() {
+        return "";
+    }
+
     @Override public int getId0() {
         return id;
     }

@@ -46,6 +46,8 @@ class SourceBuilder {
     @Getter @Setter private RequestType type;
     @Getter @Setter private DetectPoint detectPoint;
     @Getter @Setter private long timeBucket;
+    @Getter @Setter private int sqlId;
+    @Getter @Setter private String sql;
 
     All toAll() {
         All all = new All();
@@ -177,12 +179,13 @@ class SourceBuilder {
             return null;
         }
         DatabaseAccess databaseAccess = new DatabaseAccess();
-        databaseAccess.setId(destServiceId);
+        databaseAccess.setId(sqlId);
         databaseAccess.setDatabaseTypeId(componentId);
         databaseAccess.setLatency(latency);
         databaseAccess.setName(destServiceName);
         databaseAccess.setStatus(status);
         databaseAccess.setTimeBucket(timeBucket);
+        databaseAccess.setSql(sql);
         return databaseAccess;
     }
 }

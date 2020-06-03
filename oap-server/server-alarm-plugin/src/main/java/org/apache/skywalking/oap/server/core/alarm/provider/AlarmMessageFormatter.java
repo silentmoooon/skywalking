@@ -18,9 +18,10 @@
 
 package org.apache.skywalking.oap.server.core.alarm.provider;
 
+import org.apache.skywalking.oap.server.core.alarm.MetaInAlarm;
+
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.skywalking.oap.server.core.alarm.MetaInAlarm;
 
 /**
  * This is a formatter especially for alarm message.
@@ -58,6 +59,9 @@ public class AlarmMessageFormatter {
                         case "name":
                             valueFroms.add(ValueFrom.NAME);
                             break;
+                        case "sql":
+                            valueFroms.add(ValueFrom.SQL);
+                            break;
                         default:
                             throw new IllegalArgumentException("Var [" + name + "] in alarm message [" + format + "] is illegal");
                     }
@@ -85,6 +89,10 @@ public class AlarmMessageFormatter {
                         break;
                     case NAME:
                         message.append(meta.getName());
+                        break;
+                    case SQL:
+                        message.append(meta.getSql());
+                        break;
                 }
             }
         }
@@ -92,6 +100,6 @@ public class AlarmMessageFormatter {
     }
 
     private enum ValueFrom {
-        ID, NAME
+        ID, NAME,SQL
     }
 }
