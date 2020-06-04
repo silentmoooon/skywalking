@@ -216,8 +216,6 @@ public class MultiScopesSpanListener implements EntrySpanListener, ExitSpanListe
                 if (SpanTags.DB_STATEMENT.equals(tag.getKey())) {
                     String sqlStatement = tag.getValue();
                     sourceBuilder.setSql(sqlStatement);
-                    sourceBuilder.setSqlId(getDatabaseAccessInventoryOrCreate(sourceBuilder.getSourceServiceId(),
-                        sourceBuilder.getSourceEndpointId(), sourceBuilder.getDestServiceInstanceName(), sqlStatement));
                     if (StringUtil.isEmpty(sqlStatement)) {
                         statement.setStatement("[No statement]/" + sourceBuilder.getDestEndpointName());
                     } else if (sqlStatement.length() > config.getMaxSlowSQLLength()) {
@@ -306,6 +304,8 @@ public class MultiScopesSpanListener implements EntrySpanListener, ExitSpanListe
             sourceReceiver.receive(exitSourceBuilder.toServiceRelation());
             sourceReceiver.receive(exitSourceBuilder.toServiceInstanceRelation());
             if (RequestType.DATABASE.equals(exitSourceBuilder.getType())) {
+                exitSourceBuilder.setSqlId(getDatabaseAccessInventoryOrCreate(exitSourceBuilder.getSourceServiceId(),
+                        exitSourceBuilder.getSourceEndpointId(), exitSourceBuilder.getDestServiceInstanceName(), exitSourceBuilder.getSql()));
                 sourceReceiver.receive(exitSourceBuilder.toDatabaseAccess());
             }
         });

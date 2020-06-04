@@ -227,14 +227,14 @@ public class RunningRule {
 
             LocalDateTime timebucket = TIME_BUCKET_FORMATTER.parseLocalDateTime(bucket + "");
 
-            int minutes = Minutes.minutesBetween(timebucket, endTime).getMinutes();
-            if (minutes == -1) {
-                this.moveTo(timebucket);
-
-            }
 
             lock.lock();
             try {
+                if (endTime == null) {
+                    init();
+                    endTime = timebucket;
+                }
+                int minutes = Minutes.minutesBetween(timebucket, endTime).getMinutes();
                 if (minutes < 0) {
                     moveTo(timebucket);
                     minutes = 0;

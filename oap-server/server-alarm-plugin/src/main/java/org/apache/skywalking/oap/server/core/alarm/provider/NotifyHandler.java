@@ -98,17 +98,21 @@ public class NotifyHandler implements MetricsNotify {
             endpointMetaInAlarm.setName(textName);
             metaInAlarm = endpointMetaInAlarm;
         }else if(DefaultScopeDefine.inDatabaseAccessCatalog(scope)){
+            if("database_access_sla".equals(meta.getMetricsName())||"database_access_cpm".equals(meta.getMetricsName())){
+                return;
+            }
             int endpointId = Integer.parseInt(meta.getId());
             DatabaseAccessInventory databaseAccessInventory = databaseAccessInventoryCache.get(endpointId);
             if(databaseAccessInventory==null){
                 logger.warn("无法获取本次SQL告警对应的SQL语句信息");
+                return;
             }
             DatabaseAccessMetaInAlarm databaseAccessMetaInAlarm = new DatabaseAccessMetaInAlarm();
             databaseAccessMetaInAlarm.setMetricsName(meta.getMetricsName());
-            databaseAccessMetaInAlarm.setSql(databaseAccessInventory==null?"":databaseAccessInventory.getSql());
+            databaseAccessMetaInAlarm.setSql(databaseAccessInventory.getSql());
             databaseAccessMetaInAlarm.setId(endpointId);
 
-            String textName = databaseAccessInventory==null?"db":databaseAccessInventory.getName();
+            String textName = databaseAccessInventory.getName();
 
             databaseAccessMetaInAlarm.setName(textName);
             metaInAlarm = databaseAccessMetaInAlarm;

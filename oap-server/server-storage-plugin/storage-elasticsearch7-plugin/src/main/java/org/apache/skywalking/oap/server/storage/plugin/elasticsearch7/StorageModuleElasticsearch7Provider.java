@@ -27,10 +27,7 @@ import org.apache.skywalking.oap.server.core.storage.IRegisterLockDAO;
 import org.apache.skywalking.oap.server.core.storage.StorageDAO;
 import org.apache.skywalking.oap.server.core.storage.StorageException;
 import org.apache.skywalking.oap.server.core.storage.StorageModule;
-import org.apache.skywalking.oap.server.core.storage.cache.IEndpointInventoryCacheDAO;
-import org.apache.skywalking.oap.server.core.storage.cache.INetworkAddressInventoryCacheDAO;
-import org.apache.skywalking.oap.server.core.storage.cache.IServiceInstanceInventoryCacheDAO;
-import org.apache.skywalking.oap.server.core.storage.cache.IServiceInventoryCacheDAO;
+import org.apache.skywalking.oap.server.core.storage.cache.*;
 import org.apache.skywalking.oap.server.core.storage.query.IAggregationQueryDAO;
 import org.apache.skywalking.oap.server.core.storage.query.IAlarmQueryDAO;
 import org.apache.skywalking.oap.server.core.storage.query.ILogQueryDAO;
@@ -49,10 +46,7 @@ import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.base.Histor
 import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.query.TopNRecordsQueryEsDAO;
 import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.query.TopologyQueryEsDAO;
 import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.ttl.ElasticsearchStorageTTL;
-import org.apache.skywalking.oap.server.storage.plugin.elasticsearch7.cache.EndpointInventoryCacheEs7DAO;
-import org.apache.skywalking.oap.server.storage.plugin.elasticsearch7.cache.NetworkAddressInventoryCacheEs7DAO;
-import org.apache.skywalking.oap.server.storage.plugin.elasticsearch7.cache.ServiceInstanceInventoryCacheEs7DAO;
-import org.apache.skywalking.oap.server.storage.plugin.elasticsearch7.cache.ServiceInventoryCacheEs7DAO;
+import org.apache.skywalking.oap.server.storage.plugin.elasticsearch7.cache.*;
 import org.apache.skywalking.oap.server.storage.plugin.elasticsearch7.client.ElasticSearch7Client;
 import org.apache.skywalking.oap.server.storage.plugin.elasticsearch7.dao.StorageEs7DAO;
 import org.apache.skywalking.oap.server.storage.plugin.elasticsearch7.base.StorageEs7Installer;
@@ -115,6 +109,7 @@ public class StorageModuleElasticsearch7Provider extends ModuleProvider {
         this.registerServiceImplementation(IServiceInventoryCacheDAO.class, new ServiceInventoryCacheEs7DAO(elasticSearch7Client, config.getResultWindowMaxSize()));
         this.registerServiceImplementation(IServiceInstanceInventoryCacheDAO.class, new ServiceInstanceInventoryCacheEs7DAO(elasticSearch7Client, config.getResultWindowMaxSize()));
         this.registerServiceImplementation(IEndpointInventoryCacheDAO.class, new EndpointInventoryCacheEs7DAO(elasticSearch7Client));
+        this.registerServiceImplementation(IDatabaseAccessInventoryCacheDAO.class, new DataAccessInventoryCacheEs7DAO(elasticSearch7Client,config.getResultWindowMaxSize()));
         this.registerServiceImplementation(INetworkAddressInventoryCacheDAO.class, new NetworkAddressInventoryCacheEs7DAO(elasticSearch7Client, config.getResultWindowMaxSize()));
 
         this.registerServiceImplementation(ITopologyQueryDAO.class, new TopologyQueryEsDAO(elasticSearch7Client));

@@ -21,7 +21,6 @@ package org.apache.skywalking.oap.server.core.register;
 import com.google.common.base.Strings;
 import lombok.Getter;
 import lombok.Setter;
-import org.apache.commons.codec.binary.Base64;
 import org.apache.skywalking.oap.server.core.Const;
 import org.apache.skywalking.oap.server.core.analysis.Stream;
 import org.apache.skywalking.oap.server.core.register.worker.InventoryStreamProcessor;
@@ -30,7 +29,6 @@ import org.apache.skywalking.oap.server.core.source.ScopeDeclaration;
 import org.apache.skywalking.oap.server.core.storage.StorageBuilder;
 import org.apache.skywalking.oap.server.core.storage.annotation.Column;
 
-import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,14 +59,21 @@ public class DatabaseAccessInventory extends RegisterSource {
 
 
     @Override public String id() {
-
-            return buildId(serviceId,endpointId,name, Base64.encodeBase64String(sql.getBytes(StandardCharsets.UTF_8)).substring(0,10));
+//Base64.encodeBase64String(sql.getBytes(StandardCharsets.UTF_8)).substring(0,10)
+        String baseSql;
+        if (sql.length() <= 64) {
+            baseSql = sql;
+        } else {
+            baseSql = sql.substring(0, 63);
+        }
+            return buildId(serviceId,endpointId,name,baseSql );
 
     }
 
     @Override public int hashCode() {
         int result = 17;
         result = 31 * result + serviceId;
+        result = 31 * result + endpointId;
         result = 31 * result + name.hashCode();
         result = 31 * result + sql.hashCode();
         return result;
