@@ -175,8 +175,8 @@ public class CoreModuleProvider extends ModuleProvider {
         this.registerServiceImplementation(EndpointInventoryCache.class, new EndpointInventoryCache(getManager(), moduleConfig));
         this.registerServiceImplementation(IEndpointInventoryRegister.class, new EndpointInventoryRegister(getManager()));
 
-        this.registerServiceImplementation(DatabaseAccessInventoryCache.class, new DatabaseAccessInventoryCache(getManager(), moduleConfig));
-        this.registerServiceImplementation(IDataAccessInventoryRegister.class, new DataAccessInventoryRegister(getManager()));
+        this.registerServiceImplementation(SqlAccessInventoryCache.class, new SqlAccessInventoryCache(getManager(), moduleConfig));
+        this.registerServiceImplementation(ISqlAccessInventoryRegister.class, new SqlAccessInventoryRegister(getManager()));
 
 
         this.registerServiceImplementation(NetworkAddressInventoryCache.class, new NetworkAddressInventoryCache(getManager(), moduleConfig));

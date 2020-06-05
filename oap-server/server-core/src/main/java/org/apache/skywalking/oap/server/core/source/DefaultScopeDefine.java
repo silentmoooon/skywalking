@@ -68,7 +68,8 @@ public class DefaultScopeDefine {
     public static final int ZIPKIN_SPAN = 23;
     public static final int JAEGER_SPAN = 24;
     public static final int HTTP_ACCESS_LOG = 25;
-    public static final int DATABASE_ACCESS_INVENTORY = 26;
+    public static final int SQL_ACCESS_INVENTORY = 26;
+    public static final int SQL_ACCESS = 27;
 
     /**
      * Catalog of scope, the metrics processor could use this to group all generated metrics by oal rt.
@@ -76,12 +77,12 @@ public class DefaultScopeDefine {
     public static final String SERVICE_CATALOG_NAME = "SERVICE";
     public static final String SERVICE_INSTANCE_CATALOG_NAME = "SERVICE_INSTANCE";
     public static final String ENDPOINT_CATALOG_NAME = "ENDPOINT";
-    public static final String DATABASE_ACCESS_CATALOG_NAME = "DATABASE_ACCESS";
+    public static final String SQL_ACCESS_CATALOG_NAME = "SQL_ACCESS";
 
     private static final Map<Integer, Boolean> SERVICE_CATALOG = new HashMap<>();
     private static final Map<Integer, Boolean> SERVICE_INSTANCE_CATALOG = new HashMap<>();
     private static final Map<Integer, Boolean> ENDPOINT_CATALOG = new HashMap<>();
-    private static final Map<Integer, Boolean> DATABASE_ACCESS_CATALOG = new HashMap<>();
+    private static final Map<Integer, Boolean> SQL_ACCESS_CATALOG = new HashMap<>();
 
     public static class Listener implements AnnotationListener {
         @Override public Class<? extends Annotation> annotation() {
@@ -139,8 +140,8 @@ public class DefaultScopeDefine {
             case ENDPOINT_CATALOG_NAME:
                 ENDPOINT_CATALOG.put(id, Boolean.TRUE);
                 break;
-            case DATABASE_ACCESS_CATALOG_NAME:
-                DATABASE_ACCESS_CATALOG.put(id,Boolean.TRUE);
+            case SQL_ACCESS_CATALOG_NAME:
+                SQL_ACCESS_CATALOG.put(id,Boolean.TRUE);
                 break;
         }
     }
@@ -178,8 +179,8 @@ public class DefaultScopeDefine {
     public static boolean inEndpointCatalog(int scopeId) {
         return ENDPOINT_CATALOG.containsKey(scopeId);
     }
-    public static boolean inDatabaseAccessCatalog(int scopeId){
-      return   DATABASE_ACCESS_CATALOG.containsKey(scopeId);
+    public static boolean inSqlAccessCatalog(int scopeId){
+      return   SQL_ACCESS_CATALOG.containsKey(scopeId);
     }
 
     /**

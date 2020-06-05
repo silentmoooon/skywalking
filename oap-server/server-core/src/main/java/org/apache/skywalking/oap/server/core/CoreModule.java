@@ -101,7 +101,7 @@ public class CoreModule extends ModuleDefine {
         classes.add(IServiceInstanceInventoryRegister.class);
         classes.add(IEndpointInventoryRegister.class);
         classes.add(INetworkAddressInventoryRegister.class);
-        classes.add(IDataAccessInventoryRegister.class);
+        classes.add(ISqlAccessInventoryRegister.class);
     }
 
     private void addCacheService(List<Class> classes) {
@@ -109,7 +109,7 @@ public class CoreModule extends ModuleDefine {
         classes.add(ServiceInstanceInventoryCache.class);
         classes.add(EndpointInventoryCache.class);
         classes.add(NetworkAddressInventoryCache.class);
-        classes.add(DatabaseAccessInventoryCache.class);
+        classes.add(SqlAccessInventoryCache.class);
     }
 
     private void addReceiverInterface(List<Class> classes) {

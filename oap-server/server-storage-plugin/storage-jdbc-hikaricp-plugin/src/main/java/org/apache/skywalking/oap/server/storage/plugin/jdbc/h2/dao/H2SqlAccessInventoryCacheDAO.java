@@ -18,8 +18,8 @@
 
 package org.apache.skywalking.oap.server.storage.plugin.jdbc.h2.dao;
 
-import org.apache.skywalking.oap.server.core.register.DatabaseAccessInventory;
-import org.apache.skywalking.oap.server.core.storage.cache.IDatabaseAccessInventoryCacheDAO;
+import org.apache.skywalking.oap.server.core.register.SqlAccessInventory;
+import org.apache.skywalking.oap.server.core.storage.cache.ISqlAccessInventoryCacheDAO;
 import org.apache.skywalking.oap.server.library.client.jdbc.hikaricp.JDBCHikariCPClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,43 +34,43 @@ import java.util.List;
 /**
  * @author wusheng
  */
-public class H2DataAccessInventoryCacheDAO extends H2SQLExecutor implements IDatabaseAccessInventoryCacheDAO {
-    private static final Logger logger = LoggerFactory.getLogger(H2DataAccessInventoryCacheDAO.class);
+public class H2SqlAccessInventoryCacheDAO extends H2SQLExecutor implements ISqlAccessInventoryCacheDAO {
+    private static final Logger logger = LoggerFactory.getLogger(H2SqlAccessInventoryCacheDAO.class);
     private JDBCHikariCPClient h2Client;
 
-    public H2DataAccessInventoryCacheDAO(JDBCHikariCPClient h2Client) {
+    public H2SqlAccessInventoryCacheDAO(JDBCHikariCPClient h2Client) {
         this.h2Client = h2Client;
     }
 
     @Override public int getSqlId(int serviceId,int endpointId,String name,String sql) {
-        String id = DatabaseAccessInventory.buildId(serviceId,endpointId,name,sql);
-        return getEntityIDByID(h2Client, DatabaseAccessInventory.SEQUENCE, DatabaseAccessInventory.INDEX_NAME, id);
+        String id = SqlAccessInventory.buildId(serviceId,endpointId,name,sql);
+        return getEntityIDByID(h2Client, SqlAccessInventory.SEQUENCE, SqlAccessInventory.INDEX_NAME, id);
     }
 
 
 
-    @Override public DatabaseAccessInventory get(int sqlId) {
+    @Override public SqlAccessInventory get(int sqlId) {
         try {
-            return (DatabaseAccessInventory)getByColumn(h2Client, DatabaseAccessInventory.INDEX_NAME, DatabaseAccessInventory.SEQUENCE, sqlId, new DatabaseAccessInventory.Builder());
+            return (SqlAccessInventory)getByColumn(h2Client, SqlAccessInventory.INDEX_NAME, SqlAccessInventory.SEQUENCE, sqlId, new SqlAccessInventory.Builder());
         } catch (IOException e) {
             logger.error(e.getMessage(), e);
             return null;
         }
     }
 
-    @Override public List<DatabaseAccessInventory> loadLastUpdate(long lastUpdateTime) {
-        List<DatabaseAccessInventory> serviceInventories = new ArrayList<>();
+    @Override public List<SqlAccessInventory> loadLastUpdate(long lastUpdateTime) {
+        List<SqlAccessInventory> serviceInventories = new ArrayList<>();
 
         try {
             StringBuilder sql = new StringBuilder("select * from ");
-            sql.append(DatabaseAccessInventory.INDEX_NAME);
-            sql.append(" and ").append(DatabaseAccessInventory.LAST_UPDATE_TIME).append(">?");
+            sql.append(SqlAccessInventory.INDEX_NAME);
+            sql.append(" and ").append(SqlAccessInventory.LAST_UPDATE_TIME).append(">?");
 
             try (Connection connection = h2Client.getConnection()) {
                 try (ResultSet resultSet = h2Client.executeQuery(connection, sql.toString(),  lastUpdateTime)) {
-                    DatabaseAccessInventory serviceInventory;
+                    SqlAccessInventory serviceInventory;
                     do {
-                        serviceInventory = (DatabaseAccessInventory)toStorageData(resultSet, DatabaseAccessInventory.INDEX_NAME, new DatabaseAccessInventory.Builder());
+                        serviceInventory = (SqlAccessInventory)toStorageData(resultSet, SqlAccessInventory.INDEX_NAME, new SqlAccessInventory.Builder());
                         if (serviceInventory != null) {
                             serviceInventories.add(serviceInventory);
                         }

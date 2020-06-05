@@ -32,16 +32,16 @@ import org.apache.skywalking.oap.server.core.storage.annotation.Column;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.apache.skywalking.oap.server.core.source.DefaultScopeDefine.DATABASE_ACCESS_INVENTORY;
+import static org.apache.skywalking.oap.server.core.source.DefaultScopeDefine.SQL_ACCESS_INVENTORY;
 
 /**
  * @author peng-yongsheng
  */
-@ScopeDeclaration(id = DATABASE_ACCESS_INVENTORY, name = "DatabaseAccessInventory")
-@Stream(name = DatabaseAccessInventory.INDEX_NAME, scopeId = DATABASE_ACCESS_INVENTORY, builder = DatabaseAccessInventory.Builder.class, processor = InventoryStreamProcessor.class)
-public class DatabaseAccessInventory extends RegisterSource {
+@ScopeDeclaration(id = SQL_ACCESS_INVENTORY, name = "SqlAccessInventory")
+@Stream(name = SqlAccessInventory.INDEX_NAME, scopeId = SQL_ACCESS_INVENTORY, builder = SqlAccessInventory.Builder.class, processor = InventoryStreamProcessor.class)
+public class SqlAccessInventory extends RegisterSource {
 
-    public static final String INDEX_NAME = "database_access_inventory";
+    public static final String INDEX_NAME = "sql_access_inventory";
     public static final String SERVICE_ID = "service_id";
     public static final String ENDPOINT_ID = "endpoint_id";
     public static final String NAME = "name";
@@ -81,8 +81,8 @@ public class DatabaseAccessInventory extends RegisterSource {
 
 
 
-    public DatabaseAccessInventory getClone() {
-        DatabaseAccessInventory inventory = new DatabaseAccessInventory();
+    public SqlAccessInventory getClone() {
+        SqlAccessInventory inventory = new SqlAccessInventory();
         inventory.setSequence(getSequence());
         inventory.setRegisterTime(getRegisterTime());
         inventory.setHeartbeatTime(getHeartbeatTime());
@@ -103,7 +103,7 @@ public class DatabaseAccessInventory extends RegisterSource {
         if (getClass() != obj.getClass())
             return false;
 
-        DatabaseAccessInventory source = (DatabaseAccessInventory)obj;
+        SqlAccessInventory source = (SqlAccessInventory)obj;
         if(serviceId!=source.getServiceId())
             return false;
         if(endpointId!=source.getEndpointId())
@@ -150,7 +150,7 @@ public class DatabaseAccessInventory extends RegisterSource {
 
     @Override public boolean combine(RegisterSource registerSource) {
         boolean isChanged = super.combine(registerSource);
-        DatabaseAccessInventory serviceInventory = (DatabaseAccessInventory)registerSource;
+        SqlAccessInventory serviceInventory = (SqlAccessInventory)registerSource;
 
         if (serviceInventory.getLastUpdateTime() >= this.getLastUpdateTime()) {
             this.serviceId=serviceInventory.getServiceId();
@@ -164,10 +164,10 @@ public class DatabaseAccessInventory extends RegisterSource {
 
 
 
-    public static class Builder implements StorageBuilder<DatabaseAccessInventory> {
+    public static class Builder implements StorageBuilder<SqlAccessInventory> {
 
-        @Override public DatabaseAccessInventory map2Data(Map<String, Object> dbMap) {
-            DatabaseAccessInventory inventory = new DatabaseAccessInventory();
+        @Override public SqlAccessInventory map2Data(Map<String, Object> dbMap) {
+            SqlAccessInventory inventory = new SqlAccessInventory();
             inventory.setSequence(((Number)dbMap.get(SEQUENCE)).intValue());
             inventory.setServiceId(((Number)dbMap.get(SERVICE_ID)).intValue());
             inventory.setEndpointId(((Number)dbMap.get(ENDPOINT_ID)).intValue());
@@ -179,7 +179,7 @@ public class DatabaseAccessInventory extends RegisterSource {
             return inventory;
         }
 
-        @Override public Map<String, Object> data2Map(DatabaseAccessInventory storageData) {
+        @Override public Map<String, Object> data2Map(SqlAccessInventory storageData) {
             Map<String, Object> map = new HashMap<>();
             map.put(SEQUENCE, storageData.getSequence());
             map.put(SERVICE_ID, storageData.getServiceId());

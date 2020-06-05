@@ -22,9 +22,9 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import org.apache.skywalking.oap.server.core.Const;
 import org.apache.skywalking.oap.server.core.CoreModuleConfig;
-import org.apache.skywalking.oap.server.core.register.DatabaseAccessInventory;
+import org.apache.skywalking.oap.server.core.register.SqlAccessInventory;
 import org.apache.skywalking.oap.server.core.storage.StorageModule;
-import org.apache.skywalking.oap.server.core.storage.cache.IDatabaseAccessInventoryCacheDAO;
+import org.apache.skywalking.oap.server.core.storage.cache.ISqlAccessInventoryCacheDAO;
 import org.apache.skywalking.oap.server.library.module.ModuleManager;
 import org.apache.skywalking.oap.server.library.module.Service;
 import org.slf4j.Logger;
@@ -38,22 +38,22 @@ import static java.util.Objects.nonNull;
 /**
  * @author peng-yongsheng
  */
-public class DatabaseAccessInventoryCache implements Service {
+public class SqlAccessInventoryCache implements Service {
 
-    private static final Logger logger = LoggerFactory.getLogger(DatabaseAccessInventoryCache.class);
+    private static final Logger logger = LoggerFactory.getLogger(SqlAccessInventoryCache.class);
 
     private final Cache<String, Integer> databaseCache;
-    private final Cache<Integer, DatabaseAccessInventory> databaseIdCache;
-    private final DatabaseAccessInventory databaseAccessInventory;
+    private final Cache<Integer, SqlAccessInventory> databaseIdCache;
+    private final SqlAccessInventory sqlAccessInventory;
     private final ModuleManager moduleManager;
-    private IDatabaseAccessInventoryCacheDAO cacheDAO;
+    private ISqlAccessInventoryCacheDAO cacheDAO;
 
-    public DatabaseAccessInventoryCache(ModuleManager moduleManager, CoreModuleConfig moduleConfig) {
+    public SqlAccessInventoryCache(ModuleManager moduleManager, CoreModuleConfig moduleConfig) {
         this.moduleManager = moduleManager;
-        this.databaseAccessInventory = new DatabaseAccessInventory();
-        this.databaseAccessInventory.setSequence(Const.USER_ENDPOINT_ID);
-        this.databaseAccessInventory.setName(Const.USER_CODE);
-        this.databaseAccessInventory.setServiceId(Const.USER_SERVICE_ID);
+        this.sqlAccessInventory = new SqlAccessInventory();
+        this.sqlAccessInventory.setSequence(Const.USER_ENDPOINT_ID);
+        this.sqlAccessInventory.setName(Const.USER_CODE);
+        this.sqlAccessInventory.setServiceId(Const.USER_SERVICE_ID);
 
         long initialSize = moduleConfig.getMaxSizeOfServiceInventory() / 10L;
         int initialCapacitySize = (int)(initialSize > Integer.MAX_VALUE ? Integer.MAX_VALUE : initialSize);
@@ -62,15 +62,15 @@ public class DatabaseAccessInventoryCache implements Service {
         databaseIdCache = CacheBuilder.newBuilder().initialCapacity(initialCapacitySize).maximumSize(moduleConfig.getMaxSizeOfServiceInventory()).build();
     }
 
-    private IDatabaseAccessInventoryCacheDAO getCacheDAO() {
+    private ISqlAccessInventoryCacheDAO getCacheDAO() {
         if (isNull(cacheDAO)) {
-            this.cacheDAO = moduleManager.find(StorageModule.NAME).provider().getService(IDatabaseAccessInventoryCacheDAO.class);
+            this.cacheDAO = moduleManager.find(StorageModule.NAME).provider().getService(ISqlAccessInventoryCacheDAO.class);
         }
         return this.cacheDAO;
     }
 
     public int getSqlId(int serviceId,int endpointId,String name,String sql) {
-        String id=DatabaseAccessInventory.buildId(serviceId,endpointId,name,sql);
+        String id= SqlAccessInventory.buildId(serviceId,endpointId,name,sql);
         Integer sqlId = databaseCache.getIfPresent(id);
 
         if (Objects.isNull(sqlId) || sqlId == Const.NONE) {
@@ -84,16 +84,16 @@ public class DatabaseAccessInventoryCache implements Service {
 
 
 
-    public DatabaseAccessInventory get(int sqlId) {
+    public SqlAccessInventory get(int sqlId) {
         if (logger.isDebugEnabled()) {
             logger.debug("Get service by id {} from cache", sqlId);
         }
         if (Const.USER_ENDPOINT_ID == sqlId) {
-            return databaseAccessInventory;
+            return sqlAccessInventory;
         }
 
 
-        DatabaseAccessInventory serviceInventory = databaseIdCache.getIfPresent(sqlId);
+        SqlAccessInventory serviceInventory = databaseIdCache.getIfPresent(sqlId);
 
         if (isNull(serviceInventory)) {
             serviceInventory = getCacheDAO().get(sqlId);

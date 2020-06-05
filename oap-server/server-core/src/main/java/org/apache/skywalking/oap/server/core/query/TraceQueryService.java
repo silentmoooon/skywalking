@@ -26,7 +26,6 @@ import org.apache.skywalking.apm.network.language.agent.v2.SpanObjectV2;
 import org.apache.skywalking.oap.server.core.Const;
 import org.apache.skywalking.oap.server.core.CoreModule;
 import org.apache.skywalking.oap.server.core.analysis.manual.segment.SegmentRecord;
-import org.apache.skywalking.oap.server.core.cache.DatabaseAccessInventoryCache;
 import org.apache.skywalking.oap.server.core.cache.EndpointInventoryCache;
 import org.apache.skywalking.oap.server.core.cache.NetworkAddressInventoryCache;
 import org.apache.skywalking.oap.server.core.cache.ServiceInventoryCache;
@@ -59,7 +58,6 @@ public class TraceQueryService implements Service {
     private EndpointInventoryCache endpointInventoryCache;
     private NetworkAddressInventoryCache networkAddressInventoryCache;
     private IComponentLibraryCatalogService componentLibraryCatalogService;
-    private DatabaseAccessInventoryCache databaseAccessInventoryCache;
 
     public TraceQueryService(ModuleManager moduleManager) {
         this.moduleManager = moduleManager;
@@ -85,12 +83,7 @@ public class TraceQueryService implements Service {
         }
         return endpointInventoryCache;
     }
-    private DatabaseAccessInventoryCache getDataAccessInventoryCache() {
-        if (databaseAccessInventoryCache == null) {
-            this.databaseAccessInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(DatabaseAccessInventoryCache.class);
-        }
-        return databaseAccessInventoryCache;
-    }
+
     private NetworkAddressInventoryCache getNetworkAddressInventoryCache() {
         if (networkAddressInventoryCache == null) {
             this.networkAddressInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(NetworkAddressInventoryCache.class);

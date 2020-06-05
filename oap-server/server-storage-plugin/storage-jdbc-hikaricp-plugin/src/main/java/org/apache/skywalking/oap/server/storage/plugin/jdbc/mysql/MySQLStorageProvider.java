@@ -75,7 +75,7 @@ public class MySQLStorageProvider extends ModuleProvider {
         this.registerServiceImplementation(IServiceInstanceInventoryCacheDAO.class, new H2ServiceInstanceInventoryCacheDAO(mysqlClient));
         this.registerServiceImplementation(IEndpointInventoryCacheDAO.class, new H2EndpointInventoryCacheDAO(mysqlClient));
         this.registerServiceImplementation(INetworkAddressInventoryCacheDAO.class, new H2NetworkAddressInventoryCacheDAO(mysqlClient));
-        this.registerServiceImplementation(IDatabaseAccessInventoryCacheDAO.class, new H2DataAccessInventoryCacheDAO(mysqlClient));
+        this.registerServiceImplementation(ISqlAccessInventoryCacheDAO.class, new H2SqlAccessInventoryCacheDAO(mysqlClient));
 
         this.registerServiceImplementation(ITopologyQueryDAO.class, new H2TopologyQueryDAO(mysqlClient));
         this.registerServiceImplementation(IMetricsQueryDAO.class, new H2MetricsQueryDAO(mysqlClient));

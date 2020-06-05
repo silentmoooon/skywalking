@@ -20,7 +20,6 @@ package org.apache.skywalking.oap.server.core.query;
 
 import org.apache.skywalking.oap.server.core.Const;
 import org.apache.skywalking.oap.server.core.CoreModule;
-import org.apache.skywalking.oap.server.core.cache.DatabaseAccessInventoryCache;
 import org.apache.skywalking.oap.server.core.cache.EndpointInventoryCache;
 import org.apache.skywalking.oap.server.core.cache.ServiceInstanceInventoryCache;
 import org.apache.skywalking.oap.server.core.cache.ServiceInventoryCache;
@@ -44,7 +43,6 @@ public class LogQueryService implements Service {
     private ServiceInventoryCache serviceInventoryCache;
     private ServiceInstanceInventoryCache serviceInstanceInventoryCache;
     private EndpointInventoryCache endpointInventoryCache;
-    private DatabaseAccessInventoryCache databaseAccessInventoryCache;
 
     public LogQueryService(ModuleManager moduleManager) {
         this.moduleManager = moduleManager;
@@ -76,12 +74,6 @@ public class LogQueryService implements Service {
             this.endpointInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(EndpointInventoryCache.class);
         }
         return endpointInventoryCache;
-    }
-    private DatabaseAccessInventoryCache getDataAccessInventoryCache() {
-        if (databaseAccessInventoryCache == null) {
-            this.databaseAccessInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(DatabaseAccessInventoryCache.class);
-        }
-        return databaseAccessInventoryCache;
     }
 
     public Logs queryLogs(final String metricName, int serviceId, int serviceInstanceId, int endpointId,

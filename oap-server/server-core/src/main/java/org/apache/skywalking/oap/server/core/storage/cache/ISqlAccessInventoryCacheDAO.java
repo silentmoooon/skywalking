@@ -18,7 +18,7 @@
 
 package org.apache.skywalking.oap.server.core.storage.cache;
 
-import org.apache.skywalking.oap.server.core.register.DatabaseAccessInventory;
+import org.apache.skywalking.oap.server.core.register.SqlAccessInventory;
 import org.apache.skywalking.oap.server.core.storage.DAO;
 
 import java.util.List;
@@ -26,12 +26,12 @@ import java.util.List;
 /**
  * @author peng-yongsheng
  */
-public interface IDatabaseAccessInventoryCacheDAO extends DAO {
+public interface ISqlAccessInventoryCacheDAO extends DAO {
 
     int getSqlId(int serviceId,int endpointId,String name,String sql);
 
 
-    DatabaseAccessInventory get(int serviceId);
+    SqlAccessInventory get(int serviceId);
 
-    List<DatabaseAccessInventory> loadLastUpdate(long lastUpdateTime);
+    List<SqlAccessInventory> loadLastUpdate(long lastUpdateTime);
 }

@@ -85,7 +85,7 @@ public class StorageModuleElasticsearchProvider extends ModuleProvider {
         this.registerServiceImplementation(IServiceInventoryCacheDAO.class, new ServiceInventoryCacheEsDAO(elasticSearchClient, config.getResultWindowMaxSize()));
         this.registerServiceImplementation(IServiceInstanceInventoryCacheDAO.class, new ServiceInstanceInventoryCacheDAO(elasticSearchClient, config.getResultWindowMaxSize()));
         this.registerServiceImplementation(IEndpointInventoryCacheDAO.class, new EndpointInventoryCacheEsDAO(elasticSearchClient));
-        this.registerServiceImplementation(IDatabaseAccessInventoryCacheDAO.class, new DataAccessInventoryCacheEsDAO(elasticSearchClient, config.getResultWindowMaxSize()));
+        this.registerServiceImplementation(ISqlAccessInventoryCacheDAO.class, new SqlAccessInventoryCacheEsDAO(elasticSearchClient, config.getResultWindowMaxSize()));
         this.registerServiceImplementation(INetworkAddressInventoryCacheDAO.class, new NetworkAddressInventoryCacheEsDAO(elasticSearchClient, config.getResultWindowMaxSize()));
 
         this.registerServiceImplementation(ITopologyQueryDAO.class, new TopologyQueryEsDAO(elasticSearchClient));

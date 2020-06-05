@@ -19,9 +19,9 @@
 package org.apache.skywalking.oap.server.storage.plugin.elasticsearch.cache;
 
 import org.apache.skywalking.oap.server.core.Const;
-import org.apache.skywalking.oap.server.core.register.DatabaseAccessInventory;
+import org.apache.skywalking.oap.server.core.register.SqlAccessInventory;
 import org.apache.skywalking.oap.server.core.register.RegisterSource;
-import org.apache.skywalking.oap.server.core.storage.cache.IDatabaseAccessInventoryCacheDAO;
+import org.apache.skywalking.oap.server.core.storage.cache.ISqlAccessInventoryCacheDAO;
 import org.apache.skywalking.oap.server.library.client.elasticsearch.ElasticSearchClient;
 import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.base.EsDAO;
 import org.elasticsearch.action.get.GetResponse;
@@ -38,13 +38,13 @@ import java.util.List;
 /**
  * @author peng-yongsheng
  */
-public class DataAccessInventoryCacheEsDAO extends EsDAO implements IDatabaseAccessInventoryCacheDAO {
+public class SqlAccessInventoryCacheEsDAO extends EsDAO implements ISqlAccessInventoryCacheDAO {
 
-    private static final Logger logger = LoggerFactory.getLogger(DataAccessInventoryCacheEsDAO.class);
+    private static final Logger logger = LoggerFactory.getLogger(SqlAccessInventoryCacheEsDAO.class);
 
-    protected final DatabaseAccessInventory.Builder builder = new DatabaseAccessInventory.Builder();
+    protected final SqlAccessInventory.Builder builder = new SqlAccessInventory.Builder();
     protected final int resultWindowMaxSize;
-    public DataAccessInventoryCacheEsDAO(ElasticSearchClient client,int resultWindowMaxSize) {
+    public SqlAccessInventoryCacheEsDAO(ElasticSearchClient client, int resultWindowMaxSize) {
         super(client);
         this.resultWindowMaxSize = resultWindowMaxSize;
     }
@@ -53,8 +53,8 @@ public class DataAccessInventoryCacheEsDAO extends EsDAO implements IDatabaseAcc
     @Override
     public int getSqlId(int serviceId, int endpointId, String name, String sql) {
         try {
-            String id = DatabaseAccessInventory.buildId(serviceId,endpointId,name,sql);
-            GetResponse response = getClient().get(DatabaseAccessInventory.INDEX_NAME, id);
+            String id = SqlAccessInventory.buildId(serviceId,endpointId,name,sql);
+            GetResponse response = getClient().get(SqlAccessInventory.INDEX_NAME, id);
             if (response.isExists()) {
                 return (int)response.getSource().getOrDefault(RegisterSource.SEQUENCE, 0);
             } else {
@@ -67,13 +67,13 @@ public class DataAccessInventoryCacheEsDAO extends EsDAO implements IDatabaseAcc
 
     }
 
-    @Override public DatabaseAccessInventory get(int sqlId) {
+    @Override public SqlAccessInventory get(int sqlId) {
         try {
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-            searchSourceBuilder.query(QueryBuilders.termQuery(DatabaseAccessInventory.SEQUENCE, sqlId));
+            searchSourceBuilder.query(QueryBuilders.termQuery(SqlAccessInventory.SEQUENCE, sqlId));
             searchSourceBuilder.size(1);
 
-            SearchResponse response = getClient().search(DatabaseAccessInventory.INDEX_NAME, searchSourceBuilder);
+            SearchResponse response = getClient().search(SqlAccessInventory.INDEX_NAME, searchSourceBuilder);
             if (response.getHits().totalHits == 1) {
                 SearchHit searchHit = response.getHits().getAt(0);
                 return builder.map2Data(searchHit.getSourceAsMap());
@@ -87,15 +87,15 @@ public class DataAccessInventoryCacheEsDAO extends EsDAO implements IDatabaseAcc
     }
 
     @Override
-    public List<DatabaseAccessInventory> loadLastUpdate(long lastUpdateTime) {
-        List<DatabaseAccessInventory> addressInventories = new ArrayList<>();
+    public List<SqlAccessInventory> loadLastUpdate(long lastUpdateTime) {
+        List<SqlAccessInventory> addressInventories = new ArrayList<>();
 
         try {
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-            searchSourceBuilder.query(QueryBuilders.rangeQuery(DatabaseAccessInventory.LAST_UPDATE_TIME).gte(lastUpdateTime));
+            searchSourceBuilder.query(QueryBuilders.rangeQuery(SqlAccessInventory.LAST_UPDATE_TIME).gte(lastUpdateTime));
             searchSourceBuilder.size(resultWindowMaxSize);
 
-            SearchResponse response = getClient().search(DatabaseAccessInventory.INDEX_NAME, searchSourceBuilder);
+            SearchResponse response = getClient().search(SqlAccessInventory.INDEX_NAME, searchSourceBuilder);
 
             for (SearchHit searchHit : response.getHits().getHits()) {
                 addressInventories.add(this.builder.map2Data(searchHit.getSourceAsMap()));

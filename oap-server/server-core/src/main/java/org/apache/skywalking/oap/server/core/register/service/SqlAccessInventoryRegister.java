@@ -16,8 +16,8 @@ package org.apache.skywalking.oap.server.core.register.service;
 
 import org.apache.skywalking.oap.server.core.Const;
 import org.apache.skywalking.oap.server.core.CoreModule;
-import org.apache.skywalking.oap.server.core.cache.DatabaseAccessInventoryCache;
-import org.apache.skywalking.oap.server.core.register.DatabaseAccessInventory;
+import org.apache.skywalking.oap.server.core.cache.SqlAccessInventoryCache;
+import org.apache.skywalking.oap.server.core.register.SqlAccessInventory;
 import org.apache.skywalking.oap.server.core.register.worker.InventoryStreamProcessor;
 import org.apache.skywalking.oap.server.library.module.ModuleDefineHolder;
 import org.slf4j.Logger;
@@ -30,21 +30,21 @@ import static java.util.Objects.isNull;
 /**
  * @author peng-yongsheng
  */
-public class DataAccessInventoryRegister implements IDataAccessInventoryRegister {
+public class SqlAccessInventoryRegister implements ISqlAccessInventoryRegister {
 
-    private static final Logger logger = LoggerFactory.getLogger(DataAccessInventoryRegister.class);
+    private static final Logger logger = LoggerFactory.getLogger(SqlAccessInventoryRegister.class);
 
     private final ModuleDefineHolder moduleDefineHolder;
-    private DatabaseAccessInventoryCache cacheService;
+    private SqlAccessInventoryCache cacheService;
 
-    public DataAccessInventoryRegister(ModuleDefineHolder moduleDefineHolder) {
+    public SqlAccessInventoryRegister(ModuleDefineHolder moduleDefineHolder) {
         this.moduleDefineHolder = moduleDefineHolder;
     }
 
-    private DatabaseAccessInventoryCache getCacheService() {
+    private SqlAccessInventoryCache getCacheService() {
         if (isNull(cacheService)) {
             cacheService =
-                moduleDefineHolder.find(CoreModule.NAME).provider().getService(DatabaseAccessInventoryCache.class);
+                moduleDefineHolder.find(CoreModule.NAME).provider().getService(SqlAccessInventoryCache.class);
         }
         return cacheService;
     }
@@ -60,7 +60,7 @@ public class DataAccessInventoryRegister implements IDataAccessInventoryRegister
         int sqlId = getCacheService().getSqlId(serviceId,endpointId, name, sql);
 
         if (sqlId == Const.NONE) {
-            DatabaseAccessInventory endpointInventory = new DatabaseAccessInventory();
+            SqlAccessInventory endpointInventory = new SqlAccessInventory();
             endpointInventory.setServiceId(serviceId);
             endpointInventory.setName(name);
             endpointInventory.setSql(sql);
@@ -76,7 +76,7 @@ public class DataAccessInventoryRegister implements IDataAccessInventoryRegister
 
     @Override
     public void heartbeat(int sqlId, long heartBeatTime) {
-        DatabaseAccessInventory endpointInventory = getCacheService().get(sqlId);
+        SqlAccessInventory endpointInventory = getCacheService().get(sqlId);
         if (Objects.nonNull(endpointInventory)) {
             endpointInventory.setHeartbeatTime(heartBeatTime);
 

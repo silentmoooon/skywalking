@@ -26,7 +26,7 @@ import org.apache.skywalking.oap.server.core.Const;
 import org.apache.skywalking.oap.server.core.CoreModule;
 import org.apache.skywalking.oap.server.core.analysis.TimeBucket;
 import org.apache.skywalking.oap.server.core.cache.*;
-import org.apache.skywalking.oap.server.core.register.DatabaseAccessInventory;
+import org.apache.skywalking.oap.server.core.register.SqlAccessInventory;
 import org.apache.skywalking.oap.server.core.register.worker.InventoryStreamProcessor;
 import org.apache.skywalking.oap.server.core.source.*;
 import org.apache.skywalking.oap.server.library.module.ModuleManager;
@@ -63,7 +63,7 @@ public class MultiScopesSpanListener implements EntrySpanListener, ExitSpanListe
     private final ServiceInstanceInventoryCache instanceInventoryCache;
     private final ServiceInventoryCache serviceInventoryCache;
     private final EndpointInventoryCache endpointInventoryCache;
-    private final DatabaseAccessInventoryCache databaseAccessInventoryCache;
+    private final SqlAccessInventoryCache sqlAccessInventoryCache;
 
     private final List<SourceBuilder> entrySourceBuilders;
     private final List<SourceBuilder> exitSourceBuilders;
@@ -83,8 +83,8 @@ public class MultiScopesSpanListener implements EntrySpanListener, ExitSpanListe
         this.serviceInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(ServiceInventoryCache.class);
         this.endpointInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(EndpointInventoryCache.class);
         this.networkAddressInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(NetworkAddressInventoryCache.class);
-        this.databaseAccessInventoryCache =
-            moduleManager.find(CoreModule.NAME).provider().getService(DatabaseAccessInventoryCache.class);
+        this.sqlAccessInventoryCache =
+            moduleManager.find(CoreModule.NAME).provider().getService(SqlAccessInventoryCache.class);
         this.config = config;
         this.traceId = null;
     }
@@ -144,7 +144,7 @@ public class MultiScopesSpanListener implements EntrySpanListener, ExitSpanListe
         this.entrySpanDecorator = spanDecorator;
     }
 
-    public int getDatabaseAccessInventoryOrCreate(int serviceId, int endpointId, String name, String sql) {
+    public int getSqlAccessInventoryOrCreate(int serviceId, int endpointId, String name, String sql) {
         // String sqlBase64= Base64.encodeBase64String(sql.getBytes(StandardCharsets.UTF_8)).substring(0,10);
         String baseSql;
         if (sql.length() <= 64) {
@@ -152,10 +152,10 @@ public class MultiScopesSpanListener implements EntrySpanListener, ExitSpanListe
         } else {
             baseSql = sql.substring(0, 63);
         }
-        int sqlId = databaseAccessInventoryCache.getSqlId(serviceId, endpointId, name, baseSql);
+        int sqlId = sqlAccessInventoryCache.getSqlId(serviceId, endpointId, name, baseSql);
 
         if (sqlId == Const.NONE) {
-            DatabaseAccessInventory endpointInventory = new DatabaseAccessInventory();
+            SqlAccessInventory endpointInventory = new SqlAccessInventory();
             endpointInventory.setServiceId(serviceId);
             endpointInventory.setEndpointId(endpointId);
             endpointInventory.setName(name);
@@ -304,9 +304,10 @@ public class MultiScopesSpanListener implements EntrySpanListener, ExitSpanListe
             sourceReceiver.receive(exitSourceBuilder.toServiceRelation());
             sourceReceiver.receive(exitSourceBuilder.toServiceInstanceRelation());
             if (RequestType.DATABASE.equals(exitSourceBuilder.getType())) {
-                exitSourceBuilder.setSqlId(getDatabaseAccessInventoryOrCreate(exitSourceBuilder.getSourceServiceId(),
+                exitSourceBuilder.setSqlId(getSqlAccessInventoryOrCreate(exitSourceBuilder.getSourceServiceId(),
                         exitSourceBuilder.getSourceEndpointId(), exitSourceBuilder.getDestServiceInstanceName(), exitSourceBuilder.getSql()));
                 sourceReceiver.receive(exitSourceBuilder.toDatabaseAccess());
+                sourceReceiver.receive(exitSourceBuilder.toSqlAccess());
             }
         });
 

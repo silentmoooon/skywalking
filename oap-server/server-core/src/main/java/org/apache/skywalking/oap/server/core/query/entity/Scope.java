@@ -34,7 +34,7 @@ public enum Scope {
     ServiceRelation(DefaultScopeDefine.SERVICE_RELATION),
     ServiceInstanceRelation(DefaultScopeDefine.SERVICE_INSTANCE_RELATION),
     EndpointRelation(DefaultScopeDefine.ENDPOINT_RELATION),
-    DatabaseAccess(DefaultScopeDefine.DATABASE_ACCESS);
+    SqlAccess(DefaultScopeDefine.SQL_ACCESS);
 
     @Getter
     private int scopeId;

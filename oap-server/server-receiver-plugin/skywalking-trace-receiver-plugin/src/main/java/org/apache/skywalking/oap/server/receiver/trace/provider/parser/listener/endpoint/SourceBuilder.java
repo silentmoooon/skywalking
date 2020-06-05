@@ -179,13 +179,29 @@ class SourceBuilder {
             return null;
         }
         DatabaseAccess databaseAccess = new DatabaseAccess();
-        databaseAccess.setId(sqlId);
+        databaseAccess.setId(destServiceId);
         databaseAccess.setDatabaseTypeId(componentId);
         databaseAccess.setLatency(latency);
         databaseAccess.setName(destServiceName);
         databaseAccess.setStatus(status);
         databaseAccess.setTimeBucket(timeBucket);
-        databaseAccess.setSql(sql);
         return databaseAccess;
+    }
+
+    SqlAccess toSqlAccess() {
+        if (!RequestType.DATABASE.equals(type)) {
+            return null;
+        }
+        SqlAccess sqlAccess = new SqlAccess();
+        sqlAccess.setId(sqlId);
+        sqlAccess.setServiceId(sourceServiceId);
+        sqlAccess.setServiceName(sourceServiceName);
+        sqlAccess.setEndpointId(sourceEndpointId);
+        sqlAccess.setEndpointName(sourceEndpointName);
+        sqlAccess.setLatency(latency);
+        sqlAccess.setName(destServiceName);
+        sqlAccess.setStatus(status);
+        sqlAccess.setTimeBucket(timeBucket);
+        return sqlAccess;
     }
 }

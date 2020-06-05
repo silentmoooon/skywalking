@@ -18,9 +18,9 @@
 
 package org.apache.skywalking.oap.server.storage.plugin.elasticsearch7.cache;
 
-import org.apache.skywalking.oap.server.core.register.DatabaseAccessInventory;
+import org.apache.skywalking.oap.server.core.register.SqlAccessInventory;
 import org.apache.skywalking.oap.server.library.client.elasticsearch.ElasticSearchClient;
-import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.cache.DataAccessInventoryCacheEsDAO;
+import org.apache.skywalking.oap.server.storage.plugin.elasticsearch.cache.SqlAccessInventoryCacheEsDAO;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.elasticsearch.search.SearchHit;
@@ -32,22 +32,22 @@ import org.slf4j.LoggerFactory;
  * @author peng-yongsheng
  * @author kezhenxu94
  */
-public class DataAccessInventoryCacheEs7DAO extends DataAccessInventoryCacheEsDAO {
+public class SqlAccessInventoryCacheEs7DAO extends SqlAccessInventoryCacheEsDAO {
 
-    private static final Logger logger = LoggerFactory.getLogger(DataAccessInventoryCacheEs7DAO.class);
+    private static final Logger logger = LoggerFactory.getLogger(SqlAccessInventoryCacheEs7DAO.class);
 
-    public DataAccessInventoryCacheEs7DAO(ElasticSearchClient client, int resultWindowMaxSize) {
+    public SqlAccessInventoryCacheEs7DAO(ElasticSearchClient client, int resultWindowMaxSize) {
         super(client, resultWindowMaxSize);
     }
 
     @Override
-    public DatabaseAccessInventory get(int sqlId) {
+    public SqlAccessInventory get(int sqlId) {
         try {
             SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
-            searchSourceBuilder.query(QueryBuilders.termQuery(DatabaseAccessInventory.SEQUENCE, sqlId));
+            searchSourceBuilder.query(QueryBuilders.termQuery(SqlAccessInventory.SEQUENCE, sqlId));
             searchSourceBuilder.size(1);
 
-            SearchResponse response = getClient().search(DatabaseAccessInventory.INDEX_NAME, searchSourceBuilder);
+            SearchResponse response = getClient().search(SqlAccessInventory.INDEX_NAME, searchSourceBuilder);
             if (response.getHits().getTotalHits().value == 1) {
                 SearchHit searchHit = response.getHits().getAt(0);
                 return builder.map2Data(searchHit.getSourceAsMap());

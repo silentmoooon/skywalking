@@ -16,35 +16,22 @@
  *
  */
 
-package org.apache.skywalking.oap.server.core.alarm;
+package org.apache.skywalking.oap.server.core.register.service;
 
-import org.apache.skywalking.oap.server.core.source.DefaultScopeDefine;
+import org.apache.skywalking.oap.server.library.module.Service;
 
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.Setter;
+/**
+ * @author peng-yongsheng
+ */
+public interface ISqlAccessInventoryRegister extends Service {
 
-@Getter(AccessLevel.PUBLIC)
-@Setter(AccessLevel.PUBLIC)
-public class DatabaseAccessMetaInAlarm extends MetaInAlarm {
-    private String metricsName;
-    private int id;
-    private String name;
-    private String sql;
 
-    @Override public String getScope() {
-        return DefaultScopeDefine.DATABASE_ACCESS_CATALOG_NAME;
-    }
+    int getOrCreate(int serviceId, int endpointId,String name, String sql);
+    int get(int serviceId, int endpointId,String name, String sql);
 
-    @Override public int getScopeId() {
-        return DefaultScopeDefine.DATABASE_ACCESS;
-    }
 
-    @Override public int getId0() {
-        return id;
-    }
+    void heartbeat(int sqlId, long heartBeatTime);
 
-    @Override public int getId1() {
-        return 0;
-    }
+
+
 }

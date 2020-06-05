@@ -19,7 +19,6 @@
 package org.apache.skywalking.oap.server.core.query;
 
 import org.apache.skywalking.oap.server.core.CoreModule;
-import org.apache.skywalking.oap.server.core.cache.DatabaseAccessInventoryCache;
 import org.apache.skywalking.oap.server.core.cache.EndpointInventoryCache;
 import org.apache.skywalking.oap.server.core.cache.ServiceInventoryCache;
 import org.apache.skywalking.oap.server.core.query.entity.*;
@@ -41,7 +40,6 @@ public class MetadataQueryService implements org.apache.skywalking.oap.server.li
     private IMetadataQueryDAO metadataQueryDAO;
     private ServiceInventoryCache serviceInventoryCache;
     private EndpointInventoryCache endpointInventoryCache;
-    private DatabaseAccessInventoryCache databaseAccessInventoryCache;
 
     public MetadataQueryService(ModuleManager moduleManager) {
         this.moduleManager = moduleManager;
@@ -66,12 +64,6 @@ public class MetadataQueryService implements org.apache.skywalking.oap.server.li
             endpointInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(EndpointInventoryCache.class);
         }
         return endpointInventoryCache;
-    }
-    private DatabaseAccessInventoryCache getDataAccessInventoryCache() {
-        if (databaseAccessInventoryCache == null) {
-            this.databaseAccessInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(DatabaseAccessInventoryCache.class);
-        }
-        return databaseAccessInventoryCache;
     }
 
     public ClusterBrief getGlobalBrief(final long startTimestamp, final long endTimestamp) throws IOException {

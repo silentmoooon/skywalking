@@ -18,15 +18,23 @@
 
 package org.apache.skywalking.oap.server.core.cache;
 
-import java.util.*;
-import java.util.concurrent.*;
 import org.apache.skywalking.apm.util.RunnableWithExceptionProtection;
 import org.apache.skywalking.oap.server.core.CoreModule;
-import org.apache.skywalking.oap.server.core.register.*;
+import org.apache.skywalking.oap.server.core.register.NetworkAddressInventory;
+import org.apache.skywalking.oap.server.core.register.ServiceInstanceInventory;
+import org.apache.skywalking.oap.server.core.register.ServiceInventory;
 import org.apache.skywalking.oap.server.core.storage.StorageModule;
-import org.apache.skywalking.oap.server.core.storage.cache.*;
+import org.apache.skywalking.oap.server.core.storage.cache.INetworkAddressInventoryCacheDAO;
+import org.apache.skywalking.oap.server.core.storage.cache.IServiceInstanceInventoryCacheDAO;
+import org.apache.skywalking.oap.server.core.storage.cache.IServiceInventoryCacheDAO;
 import org.apache.skywalking.oap.server.library.module.ModuleDefineHolder;
-import org.slf4j.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @author peng-yongsheng

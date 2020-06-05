@@ -81,7 +81,7 @@ public class H2StorageProvider extends ModuleProvider {
         this.registerServiceImplementation(IServiceInstanceInventoryCacheDAO.class, new H2ServiceInstanceInventoryCacheDAO(h2Client));
         this.registerServiceImplementation(IEndpointInventoryCacheDAO.class, new H2EndpointInventoryCacheDAO(h2Client));
         this.registerServiceImplementation(INetworkAddressInventoryCacheDAO.class, new H2NetworkAddressInventoryCacheDAO(h2Client));
-        this.registerServiceImplementation(IDatabaseAccessInventoryCacheDAO.class, new H2DataAccessInventoryCacheDAO(h2Client));
+        this.registerServiceImplementation(ISqlAccessInventoryCacheDAO.class, new H2SqlAccessInventoryCacheDAO(h2Client));
 
         this.registerServiceImplementation(ITopologyQueryDAO.class, new H2TopologyQueryDAO(h2Client));
         this.registerServiceImplementation(IMetricsQueryDAO.class, new H2MetricsQueryDAO(h2Client));

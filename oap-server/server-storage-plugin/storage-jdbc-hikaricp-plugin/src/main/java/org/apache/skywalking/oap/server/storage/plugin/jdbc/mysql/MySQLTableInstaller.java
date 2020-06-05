@@ -95,7 +95,7 @@ public class MySQLTableInstaller extends H2TableInstaller {
             case SERVICE_INSTANCE_INVENTORY:
             case NETWORK_ADDRESS:
             case ENDPOINT_INVENTORY:
-            case DATABASE_ACCESS_INVENTORY:
+            case SQL_ACCESS_INVENTORY:
                 createInventoryIndexes(client, model);
                 return;
             case SEGMENT:

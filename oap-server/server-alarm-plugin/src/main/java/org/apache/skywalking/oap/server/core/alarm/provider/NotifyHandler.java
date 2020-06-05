@@ -23,11 +23,11 @@ import org.apache.skywalking.oap.server.core.alarm.*;
 import org.apache.skywalking.oap.server.core.analysis.metrics.Metrics;
 import org.apache.skywalking.oap.server.core.analysis.metrics.MetricsMetaInfo;
 import org.apache.skywalking.oap.server.core.analysis.metrics.WithMetadata;
-import org.apache.skywalking.oap.server.core.cache.DatabaseAccessInventoryCache;
+import org.apache.skywalking.oap.server.core.cache.SqlAccessInventoryCache;
 import org.apache.skywalking.oap.server.core.cache.EndpointInventoryCache;
 import org.apache.skywalking.oap.server.core.cache.ServiceInstanceInventoryCache;
 import org.apache.skywalking.oap.server.core.cache.ServiceInventoryCache;
-import org.apache.skywalking.oap.server.core.register.DatabaseAccessInventory;
+import org.apache.skywalking.oap.server.core.register.SqlAccessInventory;
 import org.apache.skywalking.oap.server.core.register.EndpointInventory;
 import org.apache.skywalking.oap.server.core.register.ServiceInstanceInventory;
 import org.apache.skywalking.oap.server.core.register.ServiceInventory;
@@ -45,7 +45,7 @@ public class NotifyHandler implements MetricsNotify {
     private ServiceInventoryCache serviceInventoryCache;
     private ServiceInstanceInventoryCache serviceInstanceInventoryCache;
     private EndpointInventoryCache endpointInventoryCache;
-    private DatabaseAccessInventoryCache databaseAccessInventoryCache;
+    private SqlAccessInventoryCache sqlAccessInventoryCache;
 
     private final AlarmCore core;
     private final AlarmRulesWatcher alarmRulesWatcher;
@@ -62,7 +62,7 @@ public class NotifyHandler implements MetricsNotify {
 
         if (!DefaultScopeDefine.inServiceCatalog(scope)
             && !DefaultScopeDefine.inServiceInstanceCatalog(scope)
-            && !DefaultScopeDefine.inEndpointCatalog(scope)&& !DefaultScopeDefine.inDatabaseAccessCatalog(scope)) {
+            && !DefaultScopeDefine.inEndpointCatalog(scope)&& !DefaultScopeDefine.inSqlAccessCatalog(scope)) {
             return;
         }
 
@@ -97,25 +97,23 @@ public class NotifyHandler implements MetricsNotify {
 
             endpointMetaInAlarm.setName(textName);
             metaInAlarm = endpointMetaInAlarm;
-        }else if(DefaultScopeDefine.inDatabaseAccessCatalog(scope)){
-            if("database_access_sla".equals(meta.getMetricsName())||"database_access_cpm".equals(meta.getMetricsName())){
-                return;
-            }
+        }else if(DefaultScopeDefine.inSqlAccessCatalog(scope)){
+
             int endpointId = Integer.parseInt(meta.getId());
-            DatabaseAccessInventory databaseAccessInventory = databaseAccessInventoryCache.get(endpointId);
-            if(databaseAccessInventory==null){
+            SqlAccessInventory sqlAccessInventory = sqlAccessInventoryCache.get(endpointId);
+            if(sqlAccessInventory ==null){
                 logger.warn("无法获取本次SQL告警对应的SQL语句信息");
                 return;
             }
-            DatabaseAccessMetaInAlarm databaseAccessMetaInAlarm = new DatabaseAccessMetaInAlarm();
-            databaseAccessMetaInAlarm.setMetricsName(meta.getMetricsName());
-            databaseAccessMetaInAlarm.setSql(databaseAccessInventory.getSql());
-            databaseAccessMetaInAlarm.setId(endpointId);
+            SqlAccessMetaInAlarm sqlAccessMetaInAlarm = new SqlAccessMetaInAlarm();
+            sqlAccessMetaInAlarm.setMetricsName(meta.getMetricsName());
+            sqlAccessMetaInAlarm.setSql(sqlAccessInventory.getSql());
+            sqlAccessMetaInAlarm.setId(endpointId);
 
-            String textName = databaseAccessInventory.getName();
+            String textName = sqlAccessInventory.getName();
 
-            databaseAccessMetaInAlarm.setName(textName);
-            metaInAlarm = databaseAccessMetaInAlarm;
+            sqlAccessMetaInAlarm.setName(textName);
+            metaInAlarm = sqlAccessMetaInAlarm;
 
         }
         else {
@@ -140,6 +138,6 @@ public class NotifyHandler implements MetricsNotify {
         serviceInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(ServiceInventoryCache.class);
         serviceInstanceInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(ServiceInstanceInventoryCache.class);
         endpointInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(EndpointInventoryCache.class);
-        databaseAccessInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(DatabaseAccessInventoryCache.class);
+        sqlAccessInventoryCache = moduleManager.find(CoreModule.NAME).provider().getService(SqlAccessInventoryCache.class);
     }
 }
