@@ -152,6 +152,36 @@ public class H2TraceQueryDAO implements ITraceQueryDAO {
         sql.append(" OFFSET ").append(from);
     }
 
+    @Override public List<SegmentRecord> queryByTime(long startSecondTB, long endSecondTB) throws IOException {
+
+        List<SegmentRecord> segmentRecords = new ArrayList<>();
+        try (Connection connection = h2Client.getConnection()) {
+
+            try (ResultSet resultSet = h2Client.executeQuery(connection, "select * from " + SegmentRecord.INDEX_NAME + " where " + SegmentRecord.TIME_BUCKET + " >= ? and "+ SegmentRecord.TIME_BUCKET + " <= ?", startSecondTB,endSecondTB)) {
+                while (resultSet.next()) {
+                    SegmentRecord segmentRecord = new SegmentRecord();
+                    segmentRecord.setSegmentId(resultSet.getString(SegmentRecord.SEGMENT_ID));
+                    segmentRecord.setTraceId(resultSet.getString(SegmentRecord.TRACE_ID));
+                    segmentRecord.setServiceId(resultSet.getInt(SegmentRecord.SERVICE_ID));
+                    segmentRecord.setEndpointName(resultSet.getString(SegmentRecord.ENDPOINT_NAME));
+                    segmentRecord.setStartTime(resultSet.getLong(SegmentRecord.START_TIME));
+                    segmentRecord.setEndTime(resultSet.getLong(SegmentRecord.END_TIME));
+                    segmentRecord.setLatency(resultSet.getInt(SegmentRecord.LATENCY));
+                    segmentRecord.setIsError(resultSet.getInt(SegmentRecord.IS_ERROR));
+                    String dataBinaryBase64 = resultSet.getString(SegmentRecord.DATA_BINARY);
+                    if (!Strings.isNullOrEmpty(dataBinaryBase64)) {
+                        segmentRecord.setDataBinary(Base64.getDecoder().decode(dataBinaryBase64));
+                    }
+                    segmentRecord.setVersion(resultSet.getInt(SegmentRecord.VERSION));
+                    segmentRecords.add(segmentRecord);
+                }
+            }
+        } catch (SQLException e) {
+            throw new IOException(e);
+        }
+        return segmentRecords;
+    }
+
     @Override public List<SegmentRecord> queryByTraceId(String traceId) throws IOException {
         List<SegmentRecord> segmentRecords = new ArrayList<>();
         try (Connection connection = h2Client.getConnection()) {

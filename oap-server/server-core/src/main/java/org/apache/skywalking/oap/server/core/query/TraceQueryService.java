@@ -147,6 +147,61 @@ public class TraceQueryService implements Service {
         return trace;
     }
 
+    public List<Trace> queryTraceByTime( final long startTB, final long endTB) throws IOException {
+        String traceId="";
+        List<Trace> traces = new ArrayList<>();
+        Trace trace = new Trace();
+
+        List<SegmentRecord> segmentRecords = getTraceQueryDAO().queryByTime(startTB,endTB);
+        if (segmentRecords.isEmpty()) {
+            trace.getSpans().addAll(getTraceQueryDAO().doFlexibleTraceQuery(""));
+            traces.add(trace);
+            return traces;
+        } else {
+            for (SegmentRecord segment : segmentRecords) {
+                if (nonNull(segment)) {
+                    if(!segment.getTraceId().equals(traceId)){
+                        if(!traceId.equals("")){
+                            List<Span> sortedSpans = new LinkedList<>();
+                            if (CollectionUtils.isNotEmpty(trace.getSpans())) {
+                                List<Span> rootSpans = findRoot(trace.getSpans());
+
+                                if (CollectionUtils.isNotEmpty(rootSpans)) {
+                                    for (Span span : rootSpans) {
+                                        List<Span> childrenSpan = new ArrayList<>();
+                                        childrenSpan.add(span);
+                                        findChildren(trace.getSpans(), span, childrenSpan);
+                                        sortedSpans.addAll(childrenSpan);
+                                    }
+
+                                }
+                            }
+
+                            trace.getSpans().clear();
+                            trace.getSpans().addAll(sortedSpans);
+                            traces.add(trace);
+                            trace = new Trace();
+                        }
+                        traceId=segment.getTraceId();
+
+                    }
+                    if (segment.getVersion() == 2) {
+                        SegmentObject segmentObject = SegmentObject.parseFrom(segment.getDataBinary());
+                        trace.getSpans().addAll(buildSpanV2List(segment.getTraceId(), segment.getSegmentId(), segment.getServiceId(), segmentObject.getSpansList()));
+                    } else {
+                        TraceSegmentObject segmentObject = TraceSegmentObject.parseFrom(segment.getDataBinary());
+                        trace.getSpans().addAll(buildSpanList(segment.getTraceId(), segment.getSegmentId(), segment.getServiceId(), segmentObject.getSpansList()));
+                    }
+                }
+            }
+
+            return traces;
+        }
+
+
+    }
+
+
     private List<Span> buildSpanV2List(String traceId, String segmentId, int serviceId,
         List<SpanObjectV2> spanObjects) {
         List<Span> spans = new ArrayList<>();

@@ -20,13 +20,19 @@ package org.apache.skywalking.oap.query.graphql.resolver;
 
 import com.coxautodev.graphql.tools.GraphQLQueryResolver;
 import com.google.common.base.Strings;
-import java.io.IOException;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.skywalking.oap.query.graphql.type.Duration;
 import org.apache.skywalking.oap.query.graphql.type.TraceQueryCondition;
-import org.apache.skywalking.oap.server.core.*;
-import org.apache.skywalking.oap.server.core.query.*;
+import org.apache.skywalking.oap.server.core.Const;
+import org.apache.skywalking.oap.server.core.CoreModule;
+import org.apache.skywalking.oap.server.core.UnexpectedException;
+import org.apache.skywalking.oap.server.core.query.DurationUtils;
+import org.apache.skywalking.oap.server.core.query.TraceQueryService;
 import org.apache.skywalking.oap.server.core.query.entity.*;
 import org.apache.skywalking.oap.server.library.module.ModuleManager;
+
+import java.io.IOException;
+import java.util.List;
 
 import static java.util.Objects.nonNull;
 
@@ -75,6 +81,23 @@ public class TraceQuery implements GraphQLQueryResolver {
 
         return getQueryService().queryBasicTraces(serviceId, serviceInstanceId, endpointId, traceId, endpointName, minDuration, maxDuration, traceState, queryOrder, pagination, startSecondTB, endSecondTB);
     }
+
+    public List<Trace> queryTraceByTime(final Duration condition) throws IOException {
+        long startSecondTB = 0;
+        long endSecondTB = 0;
+        String traceId = Const.EMPTY_STRING;
+
+        if (nonNull(condition)) {
+            startSecondTB = DurationUtils.INSTANCE.startTimeDurationToSecondTimeBucket(condition.getStep(), condition.getStart());
+            endSecondTB = DurationUtils.INSTANCE.endTimeDurationToSecondTimeBucket(condition.getStep(), condition.getEnd());
+        } else {
+            throw new UnexpectedException("The condition must contains queryDuration .");
+        }
+
+
+        return getQueryService().queryTraceByTime(startSecondTB, endSecondTB);
+    }
+
 
     public Trace queryTrace(final String traceId) throws IOException {
         return getQueryService().queryTrace(traceId);
